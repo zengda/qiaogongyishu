@@ -27,32 +27,32 @@
               <el-icon><component :is="icons.Box" /></el-icon>
               <span>{{ sidebarCollapsed ? '' : '产品管理' }}</span>
             </template>
-            <el-menu-item index="/products">产品列表</el-menu-item>
-            <el-menu-item index="/products/add">添加产品</el-menu-item>
+            <el-menu-item index="/products">{{ sidebarCollapsed ? '' : '产品列表' }}</el-menu-item>
+            <el-menu-item index="/products/add">{{ sidebarCollapsed ? '' : '添加产品' }}</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/categories">
             <template #title>
               <el-icon><component :is="icons.List" /></el-icon>
               <span>{{ sidebarCollapsed ? '' : '分类管理' }}</span>
             </template>
-            <el-menu-item index="/categories">分类列表</el-menu-item>
-            <el-menu-item index="/categories/add">添加分类</el-menu-item>
+            <el-menu-item index="/categories">{{ sidebarCollapsed ? '' : '分类列表' }}</el-menu-item>
+            <el-menu-item index="/categories/add">{{ sidebarCollapsed ? '' : '添加分类' }}</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/tags">
             <template #title>
               <el-icon><component :is="icons.Tag" /></el-icon>
               <span>{{ sidebarCollapsed ? '' : '标签管理' }}</span>
             </template>
-            <el-menu-item index="/tags">标签列表</el-menu-item>
-            <el-menu-item index="/tags/add">添加标签</el-menu-item>
+            <el-menu-item index="/tags">{{ sidebarCollapsed ? '' : '标签列表' }}</el-menu-item>
+            <el-menu-item index="/tags/add">{{ sidebarCollapsed ? '' : '添加标签' }}</el-menu-item>
           </el-sub-menu>
           <el-sub-menu index="/banners">
             <template #title>
               <el-icon><component :is="icons.Image" /></el-icon>
               <span>{{ sidebarCollapsed ? '' : 'Banner管理' }}</span>
             </template>
-            <el-menu-item index="/banners">Banner列表</el-menu-item>
-            <el-menu-item index="/banners/add">添加Banner</el-menu-item>
+            <el-menu-item index="/banners">{{ sidebarCollapsed ? '' : 'Banner列表' }}</el-menu-item>
+            <el-menu-item index="/banners/add">{{ sidebarCollapsed ? '' : '添加Banner' }}</el-menu-item>
           </el-sub-menu>
           <el-menu-item index="/customers">
             <el-icon><component :is="icons.User" /></el-icon>
