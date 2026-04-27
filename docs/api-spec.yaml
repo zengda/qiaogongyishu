@@ -1,0 +1,2757 @@
+openapi: 3.0.3
+info:
+  title: 巧工艺墅 - 微信小程序 API 接口文档
+  description: |
+    巧工艺墅微信小程序后端接口规范，包含小程序端接口和管理后台接口。
+
+    ## 统一响应格式
+
+    所有接口统一返回以下 JSON 格式：
+
+    ```json
+    {
+      "code": 200,
+      "message": "success",
+      "data": {}
+    }
+    ```
+
+    分页响应格式：
+
+    ```json
+    {
+      "code": 200,
+      "message": "success",
+      "data": {
+        "items": [],
+        "total": 100,
+        "page": 1,
+        "per_page": 10,
+        "pages": 10
+      }
+    }
+    ```
+
+    ## 认证方式
+
+    管理后台接口使用 Bearer Token (JWT) 认证，在请求头中携带：
+    ```
+    Authorization: Bearer <token>
+    ```
+
+    小程序端接口不需要认证。
+  version: 2.0.0
+  contact:
+    name: 巧工艺墅技术团队
+
+servers:
+  - url: /api/v1
+    description: API 基础路径
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: 小程序-认证
+    description: 小程序端用户认证相关接口
+  - name: 小程序-首页
+    description: 小程序端首页相关接口（Banner、分类、标签）
+  - name: 小程序-产品
+    description: 小程序端产品浏览和搜索相关接口
+  - name: 小程序-客户
+    description: 小程序端客户表单提交接口
+  - name: 小程序-系统
+    description: 小程序端系统配置相关接口
+  - name: 管理后台-认证
+    description: 管理后台管理员认证相关接口
+  - name: 管理后台-仪表盘
+    description: 管理后台仪表盘统计接口
+  - name: 管理后台-产品管理
+    description: 管理后台产品增删改查接口
+  - name: 管理后台-分类管理
+    description: 管理后台分类增删改查接口
+  - name: 管理后台-标签管理
+    description: 管理后台标签增删改查接口
+  - name: 管理后台-Banner管理
+    description: 管理后台Banner增删改查接口
+  - name: 管理后台-客户管理
+    description: 管理后台客户管理和导出接口
+  - name: 管理后台-上传
+    description: 管理后台文件上传接口
+  - name: 管理后台-系统设置
+    description: 管理后台系统设置接口
+  - name: 管理后台-存储配置
+    description: 管理后台存储配置管理接口
+
+paths:
+  # ============================================================
+  # 小程序端接口
+  # ============================================================
+
+  /auth/wx-login:
+    post:
+      tags:
+        - 小程序-认证
+      summary: 微信登录
+      description: 通过微信小程序的临时登录凭证 code 换取用户 token 和 openid
+      security: []
+      operationId: wxLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WxLoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WxLoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /banners:
+    get:
+      tags:
+        - 小程序-首页
+      summary: 获取Banner列表
+      description: 获取小程序首页展示的 Banner 列表，仅返回当前有效的 Banner
+      security: []
+      operationId: getBanners
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /categories:
+    get:
+      tags:
+        - 小程序-首页
+      summary: 获取分类列表
+      description: 获取产品分类列表，用于小程序端筛选和展示
+      security: []
+      operationId: getCategories
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /tags:
+    get:
+      tags:
+        - 小程序-首页
+      summary: 获取风格标签列表
+      description: 获取产品风格标签列表，用于小程序端筛选和展示
+      security: []
+      operationId: getTags
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products:
+    get:
+      tags:
+        - 小程序-产品
+      summary: 获取产品列表
+      description: 根据分类、标签、关键词等条件筛选产品列表，支持分页
+      security: []
+      operationId: getProducts
+      parameters:
+        - name: category_id
+          in: query
+          description: 分类ID筛选
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: tag_id
+          in: query
+          description: 标签ID筛选
+          required: false
+          schema:
+            type: integer
+            example: 2
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: per_page
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: false
+          schema:
+            type: string
+            example: 别墅
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPaginatedResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{id}:
+    get:
+      tags:
+        - 小程序-产品
+      summary: 获取产品详情
+      description: 根据产品ID获取产品详细信息，包含主图（banner_images）和详情图（detail_images）
+      security: []
+      operationId: getProductDetail
+      parameters:
+        - name: id
+          in: path
+          description: 产品ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /products/{id}/view:
+    post:
+      tags:
+        - 小程序-产品
+      summary: 记录产品浏览
+      description: 记录用户浏览产品的行为，用于统计产品浏览量
+      security: []
+      operationId: recordProductView
+      parameters:
+        - name: id
+          in: path
+          description: 产品ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 记录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /search:
+    get:
+      tags:
+        - 小程序-产品
+      summary: 搜索产品
+      description: 根据关键词搜索产品，支持分页
+      security: []
+      operationId: searchProducts
+      parameters:
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: true
+          schema:
+            type: string
+            example: 别墅
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: per_page
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+      responses:
+        '200':
+          description: 搜索成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPaginatedResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /customers:
+    post:
+      tags:
+        - 小程序-客户
+      summary: 提交客户表单
+      description: 小程序端用户提交客户咨询表单，包含联系信息和意向产品
+      security: []
+      operationId: createCustomer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCustomerRequest'
+      responses:
+        '200':
+          description: 提交成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /settings/{key}:
+    get:
+      tags:
+        - 小程序-系统
+      summary: 获取系统设置
+      description: 根据设置键名获取对应的系统设置值
+      security: []
+      operationId: getSettingByKey
+      parameters:
+        - name: key
+          in: path
+          description: 设置键名
+          required: true
+          schema:
+            type: string
+            example: site_name
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /storage/config:
+    get:
+      tags:
+        - 小程序-系统
+      summary: 获取当前存储配置信息
+      description: 获取当前存储配置信息（公开接口），返回当前存储类型等基本信息，不包含敏感信息
+      security: []
+      operationId: getPublicStorageConfig
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicStorageConfigResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ============================================================
+  # 管理后台接口
+  # ============================================================
+
+  /admin/auth/login:
+    post:
+      tags:
+        - 管理后台-认证
+      summary: 管理员登录
+      description: 管理员使用用户名和密码登录后台系统，返回 JWT Token
+      security: []
+      operationId: adminLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLoginResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/auth/logout:
+    post:
+      tags:
+        - 管理后台-认证
+      summary: 管理员登出
+      description: 管理员退出登录，使当前 Token 失效
+      operationId: adminLogout
+      responses:
+        '200':
+          description: 登出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/auth/password:
+    put:
+      tags:
+        - 管理后台-认证
+      summary: 修改密码
+      description: 管理员修改当前账号的登录密码
+      operationId: adminChangePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePasswordRequest'
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/dashboard:
+    get:
+      tags:
+        - 管理后台-仪表盘
+      summary: 仪表盘统计数据
+      description: 获取管理后台仪表盘所需的统计数据，包括产品数量、客户数量、今日新增等
+      operationId: getDashboard
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/products:
+    get:
+      tags:
+        - 管理后台-产品管理
+      summary: 产品列表
+      description: 获取管理后台产品列表，支持按关键词、分类、状态筛选和分页
+      operationId: adminGetProducts
+      parameters:
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: false
+          schema:
+            type: string
+            example: 别墅
+        - name: category_id
+          in: query
+          description: 分类ID筛选
+          required: false
+          schema:
+            type: integer
+            example: 1
+        - name: status
+          in: query
+          description: 产品状态筛选（active=上架, inactive=下架）
+          required: false
+          schema:
+            type: string
+            enum: [active, inactive]
+            example: active
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: per_page
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPaginatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - 管理后台-产品管理
+      summary: 创建产品
+      description: 在管理后台创建新产品
+      operationId: adminCreateProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/products/{id}:
+    get:
+      tags:
+        - 管理后台-产品管理
+      summary: 获取产品详情
+      description: 在管理后台根据产品ID获取产品详细信息
+      operationId: adminGetProductDetail
+      parameters:
+        - name: id
+          in: path
+          description: 产品ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - 管理后台-产品管理
+      summary: 更新产品
+      description: 在管理后台更新指定产品的信息
+      operationId: adminUpdateProduct
+      parameters:
+        - name: id
+          in: path
+          description: 产品ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - 管理后台-产品管理
+      summary: 删除产品
+      description: 在管理后台删除指定产品
+      operationId: adminDeleteProduct
+      parameters:
+        - name: id
+          in: path
+          description: 产品ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/products/{id}/status:
+    patch:
+      tags:
+        - 管理后台-产品管理
+      summary: 切换产品上下架状态
+      description: 切换指定产品的上架/下架状态
+      operationId: adminToggleProductStatus
+      parameters:
+        - name: id
+          in: path
+          description: 产品ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 操作成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/categories:
+    get:
+      tags:
+        - 管理后台-分类管理
+      summary: 分类列表
+      description: 获取管理后台产品分类列表
+      operationId: adminGetCategories
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - 管理后台-分类管理
+      summary: 创建分类
+      description: 在管理后台创建新的产品分类
+      operationId: adminCreateCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCategoryRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/categories/{id}:
+    put:
+      tags:
+        - 管理后台-分类管理
+      summary: 更新分类
+      description: 在管理后台更新指定分类的信息
+      operationId: adminUpdateCategory
+      parameters:
+        - name: id
+          in: path
+          description: 分类ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCategoryRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - 管理后台-分类管理
+      summary: 删除分类
+      description: 在管理后台删除指定分类
+      operationId: adminDeleteCategory
+      parameters:
+        - name: id
+          in: path
+          description: 分类ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/tags:
+    get:
+      tags:
+        - 管理后台-标签管理
+      summary: 标签列表
+      description: 获取管理后台产品风格标签列表
+      operationId: adminGetTags
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - 管理后台-标签管理
+      summary: 创建标签
+      description: 在管理后台创建新的产品风格标签
+      operationId: adminCreateTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTagRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/tags/{id}:
+    put:
+      tags:
+        - 管理后台-标签管理
+      summary: 更新标签
+      description: 在管理后台更新指定标签的信息
+      operationId: adminUpdateTag
+      parameters:
+        - name: id
+          in: path
+          description: 标签ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTagRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - 管理后台-标签管理
+      summary: 删除标签
+      description: 在管理后台删除指定标签
+      operationId: adminDeleteTag
+      parameters:
+        - name: id
+          in: path
+          description: 标签ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/banners:
+    get:
+      tags:
+        - 管理后台-Banner管理
+      summary: Banner列表
+      description: 获取管理后台 Banner 列表
+      operationId: adminGetBanners
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - 管理后台-Banner管理
+      summary: 创建Banner
+      description: 在管理后台创建新的 Banner
+      operationId: adminCreateBanner
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBannerRequest'
+      responses:
+        '200':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/banners/{id}:
+    put:
+      tags:
+        - 管理后台-Banner管理
+      summary: 更新Banner
+      description: 在管理后台更新指定 Banner 的信息
+      operationId: adminUpdateBanner
+      parameters:
+        - name: id
+          in: path
+          description: Banner ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBannerRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BannerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - 管理后台-Banner管理
+      summary: 删除Banner
+      description: 在管理后台删除指定 Banner
+      operationId: adminDeleteBanner
+      parameters:
+        - name: id
+          in: path
+          description: Banner ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/customers:
+    get:
+      tags:
+        - 管理后台-客户管理
+      summary: 客户列表
+      description: 获取管理后台客户列表，支持按关键词、状态、日期范围筛选和分页
+      operationId: adminGetCustomers
+      parameters:
+        - name: keyword
+          in: query
+          description: 搜索关键词（匹配姓名、手机号、微信号）
+          required: false
+          schema:
+            type: string
+            example: 张三
+        - name: status
+          in: query
+          description: 客户状态筛选
+          required: false
+          schema:
+            type: string
+            enum: [new, following, completed, invalid]
+            example: new
+        - name: start_date
+          in: query
+          description: 开始日期（YYYY-MM-DD）
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2024-01-01"
+        - name: end_date
+          in: query
+          description: 结束日期（YYYY-MM-DD）
+          required: false
+          schema:
+            type: string
+            format: date
+            example: "2024-12-31"
+        - name: page
+          in: query
+          description: 页码
+          required: false
+          schema:
+            type: integer
+            default: 1
+            example: 1
+        - name: per_page
+          in: query
+          description: 每页数量
+          required: false
+          schema:
+            type: integer
+            default: 10
+            example: 10
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerPaginatedResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/customers/export:
+    get:
+      tags:
+        - 管理后台-客户管理
+      summary: 导出客户Excel
+      description: 导出客户数据为 Excel 文件，支持按关键词、状态、日期范围筛选
+      operationId: adminExportCustomers
+      parameters:
+        - name: keyword
+          in: query
+          description: 搜索关键词
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: 客户状态筛选
+          required: false
+          schema:
+            type: string
+            enum: [new, following, completed, invalid]
+        - name: start_date
+          in: query
+          description: 开始日期（YYYY-MM-DD）
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          description: 结束日期（YYYY-MM-DD）
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 导出成功，返回 Excel 文件
+          content:
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/customers/{id}:
+    get:
+      tags:
+        - 管理后台-客户管理
+      summary: 客户详情
+      description: 在管理后台根据客户ID获取客户详细信息
+      operationId: adminGetCustomerDetail
+      parameters:
+        - name: id
+          in: path
+          description: 客户ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/customers/{id}/status:
+    patch:
+      tags:
+        - 管理后台-客户管理
+      summary: 修改客户状态
+      description: 修改指定客户的状态（如：新客户、跟进中、已成交、无效）
+      operationId: adminUpdateCustomerStatus
+      parameters:
+        - name: id
+          in: path
+          description: 客户ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerStatusRequest'
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/customers/{id}/remark:
+    patch:
+      tags:
+        - 管理后台-客户管理
+      summary: 添加客户备注
+      description: 为指定客户添加或更新备注信息
+      operationId: adminUpdateCustomerRemark
+      parameters:
+        - name: id
+          in: path
+          description: 客户ID
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCustomerRemarkRequest'
+      responses:
+        '200':
+          description: 修改成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/upload/image:
+    post:
+      tags:
+        - 管理后台-上传
+      summary: 上传图片
+      description: 上传图片文件到服务器或 OSS，返回图片访问地址
+      operationId: adminUploadImage
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 图片文件（支持 jpg、png、gif、webp 格式）
+      responses:
+        '200':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadImageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/settings:
+    get:
+      tags:
+        - 管理后台-系统设置
+      summary: 获取全部系统设置
+      description: 获取管理后台所有系统设置项
+      operationId: adminGetSettings
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - 管理后台-系统设置
+      summary: 更新系统设置
+      description: 批量更新系统设置项
+      operationId: adminUpdateSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSettingsRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/storage/config:
+    get:
+      tags:
+        - 管理后台-存储配置
+      summary: 获取存储配置
+      description: 获取管理后台当前存储配置信息（包含完整的 OSS 配置信息）
+      operationId: adminGetStorageConfig
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageConfigResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - 管理后台-存储配置
+      summary: 更新存储配置
+      description: 更新存储配置，支持切换本地存储和阿里云 OSS 存储
+      operationId: adminUpdateStorageConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateStorageConfigRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StorageConfigResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/storage/test:
+    post:
+      tags:
+        - 管理后台-存储配置
+      summary: 测试存储连接
+      description: 测试当前存储配置是否可用，特别是 OSS 连接是否正常
+      operationId: adminTestStorage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TestStorageRequest'
+      responses:
+        '200':
+          description: 测试成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestStorageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT Token 认证，通过管理员登录接口获取
+
+  responses:
+    BadRequest:
+      description: 请求参数错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 400
+            message: 请求参数错误
+            data: null
+
+    Unauthorized:
+      description: 未授权，Token 无效或已过期
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 401
+            message: 未授权，请先登录
+            data: null
+
+    NotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 404
+            message: 资源不存在
+            data: null
+
+    TooManyRequests:
+      description: 请求过于频繁
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 429
+            message: 请求过于频繁，请稍后再试
+            data: null
+
+    InternalServerError:
+      description: 服务器内部错误
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            code: 500
+            message: 服务器内部错误
+            data: null
+
+  schemas:
+    # ============================================================
+    # 通用响应结构
+    # ============================================================
+
+    SuccessResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 状态码
+          example: 200
+        message:
+          type: string
+          description: 提示信息
+          example: success
+        data:
+          type: object
+          nullable: true
+          description: 响应数据
+          example: null
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 错误状态码
+          example: 400
+        message:
+          type: string
+          description: 错误提示信息
+          example: 请求参数错误
+        data:
+          description: 错误详情（通常为 null）
+          nullable: true
+          example: null
+
+    PaginatedData:
+      type: object
+      description: 分页数据结构
+      properties:
+        items:
+          type: array
+          description: 数据列表
+          items:
+            type: object
+        total:
+          type: integer
+          description: 总记录数
+          example: 100
+        page:
+          type: integer
+          description: 当前页码
+          example: 1
+        per_page:
+          type: integer
+          description: 每页数量
+          example: 10
+        pages:
+          type: integer
+          description: 总页数
+          example: 10
+
+    # ============================================================
+    # 认证相关 Schema
+    # ============================================================
+
+    WxLoginRequest:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: 微信小程序临时登录凭证
+          example: "0a1B2c3D4e5F6g"
+
+    WxLoginResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT Token
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            openid:
+              type: string
+              description: 微信用户唯一标识
+              example: "oXJ9f5kqZ2mN8vR3wL7xY1pA4bC"
+
+    AdminLoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: 管理员用户名
+          example: admin
+        password:
+          type: string
+          description: 管理员密码
+          example: "123456"
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+              description: JWT Token
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+            admin:
+              $ref: '#/components/schemas/Admin'
+
+    ChangePasswordRequest:
+      type: object
+      required:
+        - old_password
+        - new_password
+        - confirm_password
+      properties:
+        old_password:
+          type: string
+          description: 原密码
+          example: "123456"
+        new_password:
+          type: string
+          description: 新密码
+          example: "654321"
+        confirm_password:
+          type: string
+          description: 确认新密码
+          example: "654321"
+
+    Admin:
+      type: object
+      description: 管理员信息
+      properties:
+        id:
+          type: integer
+          description: 管理员ID
+          example: 1
+        username:
+          type: string
+          description: 用户名
+          example: admin
+        real_name:
+          type: string
+          description: 真实姓名
+          example: 管理员
+        role:
+          type: string
+          description: 角色（super=超级管理员, admin=普通管理员）
+          enum: [super, admin]
+          example: super
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+        last_login_at:
+          type: string
+          format: date-time
+          description: 最后登录时间
+          example: "2024-01-15T10:30:00+08:00"
+
+    # ============================================================
+    # 产品相关 Schema
+    # ============================================================
+
+    ProductImage:
+      type: object
+      description: 产品图片
+      properties:
+        id:
+          type: integer
+          description: 图片ID
+          example: 1
+        image_url:
+          type: string
+          description: 图片地址
+          example: "https://cdn.example.com/images/product1/banner1.jpg"
+        image_type:
+          type: string
+          description: 图片类型（banner=主图, detail=详情图）
+          enum: [banner, detail]
+          example: banner
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+
+    Tag:
+      type: object
+      description: 风格标签
+      properties:
+        id:
+          type: integer
+          description: 标签ID
+          example: 1
+        name:
+          type: string
+          description: 标签名称
+          example: 新中式
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+
+    Category:
+      type: object
+      description: 产品分类
+      properties:
+        id:
+          type: integer
+          description: 分类ID
+          example: 1
+        name:
+          type: string
+          description: 分类名称
+          example: 三层
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+
+    Product:
+      type: object
+      description: 产品信息
+      properties:
+        id:
+          type: integer
+          description: 产品ID
+          example: 1
+        title:
+          type: string
+          description: 产品标题
+          example: "新中式三层乡村别墅"
+        model_number:
+          type: string
+          description: 产品型号
+          example: "QGY-2026-001"
+        category_id:
+          type: integer
+          description: 分类ID
+          example: 1
+        category_name:
+          type: string
+          description: 分类名称
+          example: 三层
+        description:
+          type: string
+          description: 产品描述
+          example: "新中式风格的乡村三层别墅，适合家庭居住"
+        floor_area:
+          type: string
+          description: 建筑面积（如"180㎡"）
+          example: "180㎡"
+        building_area:
+          type: string
+          description: 占地面积（如"120㎡"）
+          example: "120㎡"
+        rooms:
+          type: string
+          description: 房间配置
+          example: "3室2厅2卫"
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        view_count:
+          type: integer
+          description: 浏览次数
+          example: 256
+        is_active:
+          type: boolean
+          description: 是否上架
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+          example: "2024-01-15T10:30:00+08:00"
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新时间
+          example: "2024-01-15T10:30:00+08:00"
+        banner_images:
+          type: array
+          description: 主图列表
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        detail_images:
+          type: array
+          description: 详情图列表
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        tags:
+          type: array
+          description: 标签列表
+          items:
+            $ref: '#/components/schemas/Tag'
+
+    ProductDetailResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/Product'
+
+    ProductPaginatedData:
+      type: object
+      description: 产品分页数据
+      allOf:
+        - $ref: '#/components/schemas/PaginatedData'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Product'
+
+    ProductPaginatedResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/ProductPaginatedData'
+
+    CreateProductRequest:
+      type: object
+      required:
+        - title
+        - category_id
+      properties:
+        title:
+          type: string
+          description: 产品标题
+          example: "现代简约轻钢别墅 A-001"
+        model_number:
+          type: string
+          description: 产品型号
+          example: "A-001"
+        category_id:
+          type: integer
+          description: 分类ID
+          example: 1
+        tag_ids:
+          type: array
+          description: 标签ID列表
+          items:
+            type: integer
+          example: [1, 2, 3]
+        floor_area:
+          type: string
+          description: 建筑面积（如"180㎡"）
+          example: "180㎡"
+        building_area:
+          type: string
+          description: 占地面积（如"120㎡"）
+          example: "120㎡"
+        rooms:
+          type: string
+          description: 房间配置
+          example: "4室2厅3卫"
+        description:
+          type: string
+          description: 产品描述
+          example: "新中式风格的乡村别墅，适合家庭居住"
+        banner_images:
+          type: array
+          description: 主图URL列表
+          items:
+            type: string
+          example: ["https://cdn.example.com/images/banner1.jpg"]
+        detail_images:
+          type: array
+          description: 详情图URL列表
+          items:
+            type: string
+          example: ["https://cdn.example.com/images/detail1.jpg"]
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否上架
+          example: true
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 产品标题
+          example: "新中式三层乡村别墅 QGY-2026-001"
+        model_number:
+          type: string
+          description: 产品型号
+          example: "QGY-2026-001"
+        category_id:
+          type: integer
+          description: 分类ID
+          example: 1
+        tag_ids:
+          type: array
+          description: 标签ID列表
+          items:
+            type: integer
+          example: [1, 2, 3]
+        floor_area:
+          type: string
+          description: 建筑面积（如"180㎡"）
+          example: "180㎡"
+        building_area:
+          type: string
+          description: 占地面积（如"120㎡"）
+          example: "120㎡"
+        rooms:
+          type: string
+          description: 房间配置
+          example: "4室2厅3卫"
+        description:
+          type: string
+          description: 产品描述
+          example: "新中式风格的乡村别墅，适合家庭居住"
+        banner_images:
+          type: array
+          description: 主图URL列表
+          items:
+            type: string
+          example: ["https://cdn.example.com/images/banner1.jpg"]
+        detail_images:
+          type: array
+          description: 详情图URL列表
+          items:
+            type: string
+          example: ["https://cdn.example.com/images/detail1.jpg"]
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否上架
+          example: true
+
+    # ============================================================
+    # 分类相关 Schema
+    # ============================================================
+
+    CategoryResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/Category'
+
+    CategoryListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+
+    CreateCategoryRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: 分类名称
+          example: 三层
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+
+    CreateCategoryRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: 分类名称
+          example: 三层
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+
+    # ============================================================
+    # 标签相关 Schema
+    # ============================================================
+
+    TagResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/Tag'
+
+    TagListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+
+    CreateTagRequest:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: 标签名称
+          example: 新中式
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+
+    UpdateTagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 标签名称
+          example: 新中式
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+
+    # ============================================================
+    # Banner 相关 Schema
+    # ============================================================
+
+    Banner:
+      type: object
+      description: Banner 信息
+      properties:
+        id:
+          type: integer
+          description: Banner ID
+          example: 1
+        title:
+          type: string
+          description: Banner 标题
+          example: "春季促销活动"
+        image_url:
+          type: string
+          description: Banner 图片地址
+          example: "https://cdn.example.com/images/banner/spring.jpg"
+        link_type:
+          type: string
+          description: 链接类型（none=无链接, product=产品详情, category=分类页, url=外部链接）
+          enum: [none, product, category, url]
+          example: product
+        link_value:
+          type: string
+          description: 链接值（产品ID、分类ID或外部URL）
+          example: "1"
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+        start_time:
+          type: string
+          format: date-time
+          description: 生效开始时间
+          example: "2026-01-01T00:00:00+08:00"
+        end_time:
+          type: string
+          format: date-time
+          description: 生效结束时间
+          example: "2026-12-31T23:59:59+08:00"
+
+    BannerResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/Banner'
+
+    BannerListResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Banner'
+
+    CreateBannerRequest:
+      type: object
+      required:
+        - title
+        - image_url
+      properties:
+        title:
+          type: string
+          description: Banner 标题
+          example: "新中式别墅设计精选"
+        image_url:
+          type: string
+          description: Banner 图片地址
+          example: "https://cdn.example.com/images/banner/new_chinese.jpg"
+        link_type:
+          type: string
+          description: 链接类型
+          enum: [none, product, category, url]
+          example: product
+        link_value:
+          type: string
+          description: 链接值
+          example: "1"
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+        start_time:
+          type: string
+          format: date-time
+          description: 生效开始时间
+          example: "2026-01-01T00:00:00+08:00"
+        end_time:
+          type: string
+          format: date-time
+          description: 生效结束时间
+          example: "2026-12-31T23:59:59+08:00"
+
+    UpdateBannerRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Banner 标题
+          example: "新中式别墅设计精选"
+        image_url:
+          type: string
+          description: Banner 图片地址
+          example: "https://cdn.example.com/images/banner/new_chinese.jpg"
+        link_type:
+          type: string
+          description: 链接类型
+          enum: [none, product, category, url]
+          example: product
+        link_value:
+          type: string
+          description: 链接值
+          example: "1"
+        sort_order:
+          type: integer
+          description: 排序序号
+          example: 1
+        is_active:
+          type: boolean
+          description: 是否启用
+          example: true
+        start_time:
+          type: string
+          format: date-time
+          description: 生效开始时间
+          example: "2026-01-01T00:00:00+08:00"
+        end_time:
+          type: string
+          format: date-time
+          description: 生效结束时间
+          example: "2026-12-31T23:59:59+08:00"
+
+    # ============================================================
+    # 客户相关 Schema
+    # ============================================================
+
+    Customer:
+      type: object
+      description: 客户信息
+      properties:
+        id:
+          type: integer
+          description: 客户ID
+          example: 1
+        name:
+          type: string
+          description: 客户姓名
+          example: 张三
+        phone:
+          type: string
+          description: 手机号
+          example: "13800138000"
+        wechat:
+          type: string
+          description: 微信号
+          example: "zhangsan_wx"
+        province:
+          type: string
+          description: 省份
+          example: 广东省
+        city:
+          type: string
+          description: 城市
+          example: 深圳市
+        building_area_budget:
+          type: string
+          description: 建筑面积预算
+          example: "200-300平方米"
+        product_id:
+          type: integer
+          description: 意向产品ID
+          nullable: true
+          example: 1
+        product_title:
+          type: string
+          description: 意向产品标题
+          nullable: true
+          example: "新中式三层乡村别墅"
+        source:
+          type: string
+          description: 来源渠道
+          example: 小程序
+        status:
+          type: string
+          description: 客户跟进状态（new=新客户, contacted=已联系, followed=跟进中, closed=已成交/关闭）
+          enum: [new, contacted, followed, closed]
+          example: new
+        remark:
+          type: string
+          description: 备注信息
+          nullable: true
+          example: "客户对中式风格感兴趣"
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+          example: "2024-01-15T10:30:00+08:00"
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新时间
+          example: "2024-01-15T10:30:00+08:00"
+
+    CustomerResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/Customer'
+
+    CustomerPaginatedData:
+      type: object
+      description: 客户分页数据
+      allOf:
+        - $ref: '#/components/schemas/PaginatedData'
+        - type: object
+          properties:
+            items:
+              type: array
+              items:
+                $ref: '#/components/schemas/Customer'
+
+    CustomerPaginatedResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/CustomerPaginatedData'
+
+    CreateCustomerRequest:
+      type: object
+      required:
+        - name
+        - phone
+      properties:
+        name:
+          type: string
+          description: 客户姓名
+          example: 张三
+        phone:
+          type: string
+          description: 手机号
+          example: "13800138000"
+        wechat:
+          type: string
+          description: 微信号
+          example: "zhangsan_wx"
+        province:
+          type: string
+          description: 省份
+          example: 广东省
+        city:
+          type: string
+          description: 城市
+          example: 深圳市
+        building_area_budget:
+          type: string
+          description: 建筑面积预算
+          example: "200-300平方米"
+        product_id:
+          type: integer
+          description: 意向产品ID
+          nullable: true
+          example: 1
+        product_title:
+          type: string
+          description: 意向产品标题
+          nullable: true
+          example: "新中式三层乡村别墅"
+
+    UpdateCustomerStatusRequest:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          description: 客户状态
+          enum: [new, contacted, followed, closed]
+          example: contacted
+
+    UpdateCustomerRemarkRequest:
+      type: object
+      required:
+        - remark
+      properties:
+        remark:
+          type: string
+          description: 备注信息
+          example: "客户对中式风格感兴趣，预算充足"
+
+    # ============================================================
+    # 仪表盘 Schema
+    # ============================================================
+
+    DashboardData:
+      type: object
+      description: 仪表盘统计数据
+      properties:
+        total_products:
+          type: integer
+          description: 产品总数
+          example: 56
+        active_products:
+          type: integer
+          description: 上架产品数
+          example: 42
+        total_customers:
+          type: integer
+          description: 客户总数
+          example: 1280
+        today_customers:
+          type: integer
+          description: 今日新增客户
+          example: 15
+        pending_customers:
+          type: integer
+          description: 待跟进客户数
+          example: 38
+        total_views:
+          type: integer
+          description: 产品总浏览量
+          example: 56800
+        today_views:
+          type: integer
+          description: 今日浏览量
+          example: 320
+        recent_customers:
+          type: array
+          description: 最近客户列表
+          items:
+            $ref: '#/components/schemas/Customer'
+
+    DashboardResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/DashboardData'
+
+    # ============================================================
+    # 上传相关 Schema
+    # ============================================================
+
+    UploadImageData:
+      type: object
+      description: 上传图片返回数据
+      properties:
+        url:
+          type: string
+          description: 图片访问地址
+          example: "https://cdn.example.com/images/2024/01/15/abc123.jpg"
+
+    UploadImageResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/UploadImageData'
+
+    # ============================================================
+    # 系统设置 Schema
+    # ============================================================
+
+    SettingItem:
+      type: object
+      description: 系统设置项
+      properties:
+        key:
+          type: string
+          description: 设置键名
+          example: site_name
+        value:
+          type: string
+          description: 设置值
+          example: 巧工艺墅
+        description:
+          type: string
+          description: 设置说明
+          example: 网站名称
+
+    SettingResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: object
+          description: 设置值
+          properties:
+            key:
+              type: string
+              example: site_name
+            value:
+              type: string
+              example: 巧工艺墅
+
+    SettingsResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettingItem'
+
+    UpdateSettingsRequest:
+      type: object
+      description: 批量更新系统设置
+      example:
+        site_name: 巧工艺墅
+        contact_phone: "400-123-4567"
+        company_address: "广东省深圳市南山区"
+
+    # ============================================================
+    # 存储配置 Schema
+    # ============================================================
+
+    StorageConfig:
+      type: object
+      description: 存储配置信息
+      properties:
+        id:
+          type: integer
+          description: 配置ID
+          example: 1
+        storage_type:
+          type: string
+          description: 存储类型（local=本地存储, oss=阿里云OSS）
+          enum: [local, oss]
+          example: oss
+        local_base_url:
+          type: string
+          description: 本地存储的基础访问URL
+          example: "http://localhost:5000/uploads"
+        local_upload_path:
+          type: string
+          description: 本地存储的上传目录路径
+          example: "/app/uploads"
+        oss_access_key_id:
+          type: string
+          description: 阿里云 OSS AccessKey ID
+          example: "LTAI5tXXXXXXXXXX"
+        oss_access_key_secret:
+          type: string
+          description: 阿里云 OSS AccessKey Secret（脱敏显示）
+          example: "LTAI5t**********3xKp"
+        oss_bucket_name:
+          type: string
+          description: OSS Bucket 名称
+          example: "qiaogongyishu"
+        oss_endpoint:
+          type: string
+          description: OSS Endpoint
+          example: "oss-cn-hangzhou.aliyuncs.com"
+        oss_cdn_domain:
+          type: string
+          description: OSS CDN 加速域名
+          example: "https://cdn.example.com"
+        oss_custom_domain:
+          type: string
+          description: OSS 自定义域名（可选）
+          nullable: true
+          example: "https://img.example.com"
+        oss_region:
+          type: string
+          description: OSS 地域
+          example: "cn-hangzhou"
+        max_file_size:
+          type: integer
+          description: 最大文件大小（字节）
+          example: 5242880
+        allowed_extensions:
+          type: string
+          description: 允许的文件扩展名（逗号分隔）
+          example: "jpg,jpeg,png,webp,gif"
+        is_active:
+          type: boolean
+          description: 是否为当前生效配置
+          example: true
+        updated_at:
+          type: string
+          format: date-time
+          description: 最后更新时间
+          example: "2026-04-27T10:30:00+08:00"
+
+    PublicStorageConfigData:
+      type: object
+      description: 公开存储配置信息（不含敏感信息）
+      properties:
+        storage_type:
+          type: string
+          description: 当前存储类型
+          enum: [local, oss]
+          example: oss
+
+    PublicStorageConfigResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/PublicStorageConfigData'
+
+    StorageConfigResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/StorageConfig'
+
+    UpdateStorageConfigRequest:
+      type: object
+      required:
+        - storage_type
+      properties:
+        storage_type:
+          type: string
+          description: 存储类型（local=本地存储, oss=阿里云OSS）
+          enum: [local, oss]
+          example: oss
+        local_base_url:
+          type: string
+          description: 本地存储的基础访问URL（storage_type=local 时填写）
+          example: "http://localhost:5000/uploads"
+        local_upload_path:
+          type: string
+          description: 本地存储的上传目录路径（storage_type=local 时填写）
+          example: "/app/uploads"
+        oss_access_key_id:
+          type: string
+          description: 阿里云 OSS AccessKey ID（storage_type=oss 时填写）
+          example: "LTAI5tXXXXXXXXXX"
+        oss_access_key_secret:
+          type: string
+          description: 阿里云 OSS AccessKey Secret（storage_type=oss 时填写）
+          example: "XXXXXXXXXXXXXXXXXXXXXXXXXX"
+        oss_bucket_name:
+          type: string
+          description: OSS Bucket 名称（storage_type=oss 时填写）
+          example: "qiaogongyishu"
+        oss_endpoint:
+          type: string
+          description: OSS Endpoint（storage_type=oss 时填写）
+          example: "oss-cn-hangzhou.aliyuncs.com"
+        oss_cdn_domain:
+          type: string
+          description: OSS CDN 加速域名（可选）
+          example: "https://cdn.example.com"
+        oss_custom_domain:
+          type: string
+          description: OSS 自定义域名（可选）
+          nullable: true
+          example: "https://img.example.com"
+        oss_region:
+          type: string
+          description: OSS 地域（可选）
+          example: "cn-hangzhou"
+        max_file_size:
+          type: integer
+          description: 最大文件大小（字节），默认5MB
+          example: 5242880
+        allowed_extensions:
+          type: string
+          description: 允许的文件扩展名（逗号分隔）
+          example: "jpg,jpeg,png,webp,gif"
+
+    TestStorageRequest:
+      type: object
+      required:
+        - storage_type
+      properties:
+        storage_type:
+          type: string
+          description: 要测试的存储类型
+          enum: [local, oss]
+          example: oss
+        oss_access_key_id:
+          type: string
+          description: 阿里云 OSS AccessKey ID（测试用，storage_type=oss 时必填）
+          example: "LTAI5tXXXXXXXXXX"
+        oss_access_key_secret:
+          type: string
+          description: 阿里云 OSS AccessKey Secret（测试用，storage_type=oss 时必填）
+          example: "XXXXXXXXXXXXXXXXXXXXXXXXXX"
+        oss_bucket_name:
+          type: string
+          description: OSS Bucket 名称（测试用）
+          example: "qiaogongyishu"
+        oss_endpoint:
+          type: string
+          description: OSS Endpoint（测试用）
+          example: "oss-cn-hangzhou.aliyuncs.com"
+
+    TestStorageData:
+      type: object
+      description: 存储连接测试结果
+      properties:
+        success:
+          type: boolean
+          description: 测试是否成功
+          example: true
+        message:
+          type: string
+          description: 测试结果描述
+          example: "OSS 连接测试成功"
+        latency:
+          type: integer
+          description: 连接延迟（毫秒）
+          example: 128
+
+    TestStorageResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: success
+        data:
+          $ref: '#/components/schemas/TestStorageData'
