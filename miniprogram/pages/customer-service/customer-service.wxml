@@ -1,0 +1,12 @@
+<view class="container">
+  <view class="qrcode-wrap">
+    <image class="qrcode-image" src="{{qrcodeUrl}}" mode="aspectFit" />
+    <view class="qrcode-tips">
+      <text class="tip-text">微信扫一扫，添加客服</text>
+      <text class="tip-text">为您一对一解答建房疑问</text>
+    </view>
+    <view class="save-tip">
+      <text>长按保存二维码</text>
+    </view>
+  </view>
+</view>

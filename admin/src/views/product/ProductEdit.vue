@@ -1,0 +1,308 @@
+<template>
+  <div class="product-edit">
+    <div class="page-header">
+      <h1>编辑产品</h1>
+      <el-button @click="$router.back()">返回</el-button>
+    </div>
+    
+    <el-form :model="form" ref="formRef" :rules="rules" class="product-form">
+      <el-form-item label="产品名称" prop="title">
+        <el-input v-model="form.title" placeholder="请输入产品名称" />
+      </el-form-item>
+      
+      <el-form-item label="产品型号" prop="model_number">
+        <el-input v-model="form.model_number" placeholder="请输入产品型号" />
+      </el-form-item>
+      
+      <el-form-item label="分类" prop="category_id">
+        <el-select v-model="form.category_id" placeholder="请选择分类">
+          <el-option v-for="cat in categories" :key="cat.id" :label="cat.name" :value="cat.id" />
+        </el-select>
+      </el-form-item>
+      
+      <el-form-item label="标签">
+        <el-select v-model="form.tag_ids" multiple placeholder="请选择标签">
+          <el-option v-for="tag in tags" :key="tag.id" :label="tag.name" :value="tag.id" />
+        </el-select>
+      </el-form-item>
+      
+      <el-form-item label="建筑面积">
+        <el-input v-model="form.floor_area" placeholder="请输入建筑面积（如：200㎡）" />
+      </el-form-item>
+      
+      <el-form-item label="占地面积">
+        <el-input v-model="form.building_area" placeholder="请输入占地面积（如：150㎡）" />
+      </el-form-item>
+      
+      <el-form-item label="户型">
+        <el-input v-model="form.rooms" placeholder="请输入户型（如：5室3厅3卫）" />
+      </el-form-item>
+      
+      <el-form-item label="封面图片" prop="cover_image">
+        <div class="upload-area" @click="triggerUpload('cover')">
+          <img v-if="form.cover_image" :src="form.cover_image" class="preview-image" />
+          <div v-else class="upload-placeholder">
+            <el-icon><Upload /></el-icon>
+            <span>点击上传封面图片</span>
+          </div>
+        </div>
+      </el-form-item>
+      
+      <el-form-item label="Banner图片">
+        <div class="banner-list">
+          <div 
+            class="banner-item" 
+            v-for="(img, index) in form.banner_images" 
+            :key="img.id || index"
+          >
+            <img :src="img.image_url" class="banner-image" />
+            <el-button type="text" @click="removeBanner(index)" style="color: #E53E3E">删除</el-button>
+          </div>
+          <div class="upload-area small" @click="triggerUpload('banner')">
+            <div class="upload-placeholder">
+              <el-icon><Plus /></el-icon>
+              <span>添加图片</span>
+            </div>
+          </div>
+        </div>
+      </el-form-item>
+      
+      <el-form-item label="详情图片">
+        <div class="detail-list">
+          <div 
+            class="detail-item" 
+            v-for="(img, index) in form.detail_images" 
+            :key="img.id || index"
+          >
+            <img :src="img.image_url" class="detail-image" />
+            <el-button type="text" @click="removeDetail(index)" style="color: #E53E3E">删除</el-button>
+          </div>
+          <div class="upload-area small" @click="triggerUpload('detail')">
+            <div class="upload-placeholder">
+              <el-icon><Plus /></el-icon>
+              <span>添加图片</span>
+            </div>
+          </div>
+        </div>
+      </el-form-item>
+      
+      <el-form-item label="描述">
+        <el-textarea v-model="form.description" placeholder="请输入产品描述" :rows="4" />
+      </el-form-item>
+      
+      <el-form-item>
+        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button @click="$router.back()">取消</el-button>
+      </el-form-item>
+    </el-form>
+    
+    <input ref="fileInput" type="file" accept="image/*" class="hidden-input" @change="handleFileChange" />
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import { Upload, Plus } from '@element-plus/icons-vue'
+import { productApi, categoryApi, tagApi, uploadApi } from '../../api'
+
+const route = useRoute()
+const formRef = ref(null)
+const fileInput = ref(null)
+const uploadType = ref('')
+
+const categories = ref([])
+const tags = ref([])
+
+const form = reactive({
+  title: '',
+  model_number: '',
+  category_id: '',
+  tag_ids: [],
+  floor_area: '',
+  building_area: '',
+  rooms: '',
+  cover_image: '',
+  banner_images: [],
+  detail_images: [],
+  description: ''
+})
+
+const rules = {
+  title: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
+  model_number: [{ required: true, message: '请输入产品型号', trigger: 'blur' }],
+  category_id: [{ required: true, message: '请选择分类', trigger: 'blur' }],
+  cover_image: [{ required: true, message: '请上传封面图片', trigger: 'blur' }]
+}
+
+const loadProduct = async () => {
+  const id = route.params.id
+  try {
+    const product = await productApi.get(id)
+    form.title = product.title
+    form.model_number = product.model_number
+    form.category_id = product.category_id
+    form.tag_ids = product.tags?.map(t => t.id) || []
+    form.floor_area = product.floor_area
+    form.building_area = product.building_area
+    form.rooms = product.rooms
+    form.cover_image = product.cover_image
+    form.banner_images = product.banner_images || []
+    form.detail_images = product.detail_images || []
+    form.description = product.description
+  } catch (error) {
+    console.error('加载产品失败:', error)
+  }
+}
+
+const loadCategories = async () => {
+  categories.value = await categoryApi.list()
+}
+
+const loadTags = async () => {
+  tags.value = await tagApi.list()
+}
+
+const triggerUpload = (type) => {
+  uploadType.value = type
+  fileInput.value?.click()
+}
+
+const handleFileChange = async (e) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+  
+  try {
+    const result = await uploadApi.upload(file)
+    
+    if (uploadType.value === 'cover') {
+      form.cover_image = result.url
+    } else if (uploadType.value === 'banner') {
+      form.banner_images.push({ image_url: result.url })
+    } else if (uploadType.value === 'detail') {
+      form.detail_images.push({ image_url: result.url })
+    }
+    
+    e.target.value = ''
+  } catch (error) {
+    console.error('上传失败:', error)
+  }
+}
+
+const removeBanner = (index) => {
+  form.banner_images.splice(index, 1)
+}
+
+const removeDetail = (index) => {
+  form.detail_images.splice(index, 1)
+}
+
+const handleSubmit = async () => {
+  if (!formRef.value) return
+  
+  try {
+    await formRef.value.validate()
+    
+    const data = {
+      ...form,
+      tag_ids: form.tag_ids
+    }
+    
+    await productApi.update(route.params.id, data)
+    window.location.href = '/products'
+  } catch (error) {
+    console.error('保存失败:', error)
+  }
+}
+
+onMounted(() => {
+  loadProduct()
+  loadCategories()
+  loadTags()
+})
+</script>
+
+<style lang="scss" scoped>
+.product-edit {
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  
+  h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.product-form {
+  max-width: 800px;
+}
+
+.upload-area {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  
+  &.small {
+    padding: 20px;
+    width: 120px;
+    height: 120px;
+  }
+  
+  &:hover {
+    border-color: #1A6D5C;
+  }
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  
+  span {
+    font-size: 14px;
+    color: #999;
+  }
+}
+
+.preview-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+}
+
+.banner-list, .detail-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.banner-item, .detail-item {
+  position: relative;
+}
+
+.banner-image {
+  width: 200px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.detail-image {
+  width: 150px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.hidden-input {
+  display: none;
+}
+</style>

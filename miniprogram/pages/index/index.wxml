@@ -1,0 +1,40 @@
+<view class="container">
+  <banner-component banners="{{banners}}" bind:click="onBannerClick"></banner-component>
+  
+  <view class="search-bar" bindtap="onSearchClick">
+    <view class="search-input-wrap">
+      <text class="search-icon">🔍</text>
+      <text class="search-placeholder">搜索图纸型号、名称</text>
+    </view>
+  </view>
+  
+  <category-nav categories="{{categories}}" active-category="{{activeCategory}}" show-style-filter="{{showStyleFilter}}" bind:change="onCategoryChange" bind:style-tap="onStyleTap"></category-nav>
+  
+  <style-filter tags="{{tags}}" active-tag="{{activeTag}}" visible="{{showStyleFilter}}" bind:change="onTagChange"></style-filter>
+  
+  <view class="product-list">
+    <view 
+      class="product-card" 
+      wx:for="{{products}}" 
+      wx:key="id" 
+      bindtap="onProductClick" 
+      data-id="{{item.id}}"
+    >
+      <image class="product-image" src="{{item.cover_image}}" mode="aspectFill" lazy-load />
+      <view class="product-info">
+        <text class="product-title">{{item.title}}</text>
+        <view class="product-meta">
+          <text class="product-area">{{item.floor_area || item.building_area}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view class="load-more" wx:if="{{loading}}">
+    <text>加载中...</text>
+  </view>
+  
+  <view class="no-more" wx:if="{{!loading && !hasMore}}">
+    <text>没有更多了</text>
+  </view>
+</view>

@@ -1,0 +1,148 @@
+.container {
+  padding-bottom: 180rpx;
+}
+
+.main-swiper {
+  height: 600rpx;
+}
+
+.main-image {
+  width: 100%;
+  height: 100%;
+}
+
+.product-header {
+  background: #fff;
+  padding: 30rpx 24rpx;
+}
+
+.product-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+}
+
+.product-model {
+  font-size: 26rpx;
+  color: #999;
+  margin-top: 12rpx;
+  display: block;
+}
+
+.product-params {
+  background: #fff;
+  margin-top: 20rpx;
+  padding: 24rpx;
+  display: flex;
+  gap: 32rpx;
+}
+
+.param-item {
+  flex: 1;
+  text-align: center;
+}
+
+.param-label {
+  font-size: 24rpx;
+  color: #999;
+  display: block;
+}
+
+.param-value {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  margin-top: 8rpx;
+  display: block;
+}
+
+.product-tags {
+  background: #fff;
+  margin-top: 20rpx;
+  padding: 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.tag {
+  padding: 10rpx 24rpx;
+  background: #f0f5f3;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: #1A6D5C;
+}
+
+.detail-section {
+  background: #fff;
+  margin-top: 20rpx;
+  padding: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  display: block;
+  margin-bottom: 20rpx;
+}
+
+.detail-images {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.detail-image {
+  width: 100%;
+  border-radius: 12rpx;
+}
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 20rpx 24rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+}
+
+.bar-content {
+  text-align: center;
+  margin-bottom: 16rpx;
+}
+
+.bar-text {
+  font-size: 24rpx;
+  color: #666;
+  display: block;
+}
+
+.bar-buttons {
+  display: flex;
+  gap: 24rpx;
+}
+
+.btn {
+  flex: 1;
+  height: 88rpx;
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30rpx;
+  font-weight: 500;
+}
+
+.btn-service {
+  background: #1A6D5C;
+  color: #fff;
+}
+
+.btn-form {
+  background: #F5A623;
+  color: #fff;
+}

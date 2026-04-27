@@ -1,0 +1,45 @@
+.container {
+  min-height: 100vh;
+  background: #F7F8FA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qrcode-wrap {
+  text-align: center;
+  padding: 40rpx;
+}
+
+.qrcode-image {
+  width: 480rpx;
+  height: 480rpx;
+  background: #fff;
+  padding: 20rpx;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.qrcode-tips {
+  margin-top: 32rpx;
+}
+
+.tip-text {
+  font-size: 28rpx;
+  color: #666;
+  display: block;
+  line-height: 1.6;
+}
+
+.save-tip {
+  margin-top: 40rpx;
+  padding: 20rpx 40rpx;
+  background: rgba(26, 109, 92, 0.1);
+  border-radius: 32rpx;
+  display: inline-block;
+}
+
+.save-tip text {
+  font-size: 26rpx;
+  color: #1A6D5C;
+}

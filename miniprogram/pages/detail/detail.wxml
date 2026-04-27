@@ -1,0 +1,72 @@
+<view class="container" wx:if="{{product}}">
+  <swiper 
+    class="main-swiper" 
+    indicator-dots 
+    autoplay 
+    interval="4000" 
+    circular
+    indicator-color="rgba(255,255,255,0.5)"
+    indicator-active-color="#fff"
+    bindtap="onImageTap"
+  >
+    <swiper-item wx:for="{{product.banner_images}}" wx:key="id">
+      <image class="main-image" src="{{item.image_url}}" mode="aspectFill" />
+    </swiper-item>
+  </swiper>
+  
+  <view class="product-header">
+    <text class="product-title">{{product.title}}</text>
+    <text class="product-model">型号：{{product.model_number}}</text>
+  </view>
+  
+  <view class="product-params">
+    <view class="param-item" wx:if="{{product.floor_area}}">
+      <text class="param-label">建筑面积</text>
+      <text class="param-value">{{product.floor_area}}</text>
+    </view>
+    <view class="param-item" wx:if="{{product.building_area}}">
+      <text class="param-label">占地面积</text>
+      <text class="param-value">{{product.building_area}}</text>
+    </view>
+    <view class="param-item" wx:if="{{product.rooms}}">
+      <text class="param-label">户型</text>
+      <text class="param-value">{{product.rooms}}</text>
+    </view>
+  </view>
+  
+  <view class="product-tags" wx:if="{{product.tags && product.tags.length > 0}}">
+    <view class="tag" wx:for="{{product.tags}}" wx:key="id">
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+  
+  <view class="detail-section">
+    <text class="section-title">图纸详情</text>
+    <view class="detail-images">
+      <image 
+        class="detail-image" 
+        wx:for="{{product.detail_images}}" 
+        wx:key="id" 
+        src="{{item.image_url}}" 
+        mode="widthFix" 
+        lazy-load
+        bindtap="onDetailImageTap"
+      />
+    </view>
+  </view>
+  
+  <view class="bottom-bar">
+    <view class="bar-content">
+      <text class="bar-text">建房详情咨询设计顾问</text>
+      <text class="bar-text">添加下方微信客服</text>
+    </view>
+    <view class="bar-buttons">
+      <view class="btn btn-service" bindtap="goToCustomerService">
+        <text>在线客服</text>
+      </view>
+      <view class="btn btn-form" bindtap="goToForm">
+        <text>领取图纸</text>
+      </view>
+    </view>
+  </view>
+</view>

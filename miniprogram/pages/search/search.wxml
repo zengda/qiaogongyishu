@@ -1,0 +1,72 @@
+<view class="container">
+  <view class="search-header">
+    <view class="search-input-wrap">
+      <input 
+        class="search-input" 
+        placeholder="搜索图纸型号、名称" 
+        value="{{keyword}}" 
+        bindinput="onKeywordInput"
+        bindconfirm="onSearch"
+        focus
+      />
+    </view>
+    <text class="cancel-btn" bindtap="goBack">取消</text>
+  </view>
+  
+  <view class="history-section" wx:if="{{historyList.length > 0}}">
+    <view class="section-header">
+      <text class="section-title">搜索历史</text>
+      <text class="clear-btn" bindtap="clearHistory">清空</text>
+    </view>
+    <view class="history-list">
+      <text 
+        class="history-item" 
+        wx:for="{{historyList}}" 
+        wx:key="*this" 
+        bindtap="onHistoryTap"
+      >{{item}}</text>
+    </view>
+  </view>
+  
+  <view class="hot-section">
+    <view class="section-header">
+      <text class="section-title">热门搜索</text>
+    </view>
+    <view class="hot-list">
+      <text 
+        class="hot-item" 
+        wx:for="{{hotList}}" 
+        wx:key="*this" 
+        bindtap="onHotTap"
+      >{{item}}</text>
+    </view>
+  </view>
+  
+  <view class="result-section" wx:if="{{showResult}}">
+    <view class="result-header">
+      <text class="result-count">找到 {{total}} 个结果</text>
+    </view>
+    <view class="product-list">
+      <view 
+        class="product-card" 
+        wx:for="{{products}}" 
+        wx:key="id" 
+        bindtap="onProductClick" 
+        data-id="{{item.id}}"
+      >
+        <image class="product-image" src="{{item.cover_image}}" mode="aspectFill" lazy-load />
+        <view class="product-info">
+          <text class="product-title">{{item.title}}</text>
+          <view class="product-meta">
+            <text class="product-area">{{item.floor_area || item.building_area}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="empty-state" wx:if="{{products.length === 0}}">
+      <text class="empty-icon">🔍</text>
+      <text class="empty-text">没有找到相关图纸</text>
+    </view>
+  </view>
+</view>

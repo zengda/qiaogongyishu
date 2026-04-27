@@ -1,0 +1,14 @@
+<swiper 
+  class="banner-swiper" 
+  indicator-dots 
+  autoplay 
+  interval="3000" 
+  circular
+  indicator-color="rgba(255,255,255,0.5)"
+  indicator-active-color="#fff"
+  bindtap="onBannerTap"
+>
+  <swiper-item wx:for="{{banners}}" wx:key="id">
+    <image class="banner-image" src="{{item.image_url}}" mode="aspectFill" />
+  </swiper-item>
+</swiper>

@@ -1,0 +1,18 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/detail/detail",
+    "pages/customer-service/customer-service",
+    "pages/form/form",
+    "pages/search/search"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "巧工艺墅",
+    "navigationBarBackgroundColor": "#1A6D5C",
+    "backgroundColor": "#F7F8FA"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

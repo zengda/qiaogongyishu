@@ -1,0 +1,29 @@
+.category-scroll {
+  white-space: nowrap;
+  background: #fff;
+}
+
+.category-list {
+  display: inline-flex;
+  padding: 20rpx 24rpx;
+  gap: 24rpx;
+}
+
+.category-item {
+  padding: 16rpx 32rpx;
+  border-radius: 32rpx;
+  background: #f5f5f5;
+  font-size: 28rpx;
+  color: #666;
+}
+
+.category-item.active {
+  background: #1A6D5C;
+  color: #fff;
+}
+
+.style-btn {
+  background: #fff;
+  border: 2rpx solid #1A6D5C;
+  color: #1A6D5C;
+}

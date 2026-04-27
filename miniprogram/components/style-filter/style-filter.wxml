@@ -1,0 +1,13 @@
+<view class="style-filter" wx:if="{{visible}}">
+  <view class="filter-list">
+    <view 
+      class="filter-item {{activeTag === item.id ? 'active' : ''}}"
+      wx:for="{{tags}}" 
+      wx:key="id"
+      bindtap="onTagTap"
+      data-id="{{item.id}}"
+    >
+      <text>{{item.name}}</text>
+    </view>
+  </view>
+</view>

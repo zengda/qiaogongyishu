@@ -1,0 +1,24 @@
+.style-filter {
+  background: #fff;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20rpx;
+}
+
+.filter-item {
+  padding: 12rpx 28rpx;
+  border-radius: 24rpx;
+  background: #f9f9f9;
+  font-size: 26rpx;
+  color: #666;
+}
+
+.filter-item.active {
+  background: #F5A623;
+  color: #fff;
+}
