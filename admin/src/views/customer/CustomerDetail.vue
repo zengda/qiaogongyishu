@@ -86,7 +86,7 @@ const loadCustomer = async () => {
 
 const handleUpdateStatus = async () => {
   try {
-    await customerApi.update(route.params.id, { status: status.value })
+    await customerApi.updateStatus(route.params.id, status.value)
     customer.value.status = status.value
   } catch (error) {
     console.error('更新状态失败:', error)

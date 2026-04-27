@@ -2,100 +2,100 @@ import request from '../utils/request'
 
 export const authApi = {
   login(data) {
-    return request.post('/admin/login', data)
-  },
-  getProfile() {
-    return request.get('/admin/profile')
+    return request.post('/admin/auth/login', data)
   }
 }
 
 export const productApi = {
   list(params) {
-    return request.get('/products', { params })
+    return request.get('/admin/products', { params })
   },
   get(id) {
-    return request.get(`/products/${id}`)
+    return request.get(`/admin/products/${id}`)
   },
   create(data) {
-    return request.post('/products', data)
+    return request.post('/admin/products', data)
   },
   update(id, data) {
-    return request.put(`/products/${id}`, data)
+    return request.put(`/admin/products/${id}`, data)
   },
   delete(id) {
-    return request.delete(`/products/${id}`)
+    return request.delete(`/admin/products/${id}`)
   }
 }
 
 export const categoryApi = {
   list() {
-    return request.get('/categories')
+    return request.get('/admin/categories')
   },
   get(id) {
-    return request.get(`/categories/${id}`)
+    return request.get(`/admin/categories/${id}`)
   },
   create(data) {
-    return request.post('/categories', data)
+    return request.post('/admin/categories', data)
   },
   update(id, data) {
-    return request.put(`/categories/${id}`, data)
+    return request.put(`/admin/categories/${id}`, data)
   },
   delete(id) {
-    return request.delete(`/categories/${id}`)
+    return request.delete(`/admin/categories/${id}`)
   }
 }
 
 export const tagApi = {
   list() {
-    return request.get('/tags')
+    return request.get('/admin/tags')
   },
   get(id) {
-    return request.get(`/tags/${id}`)
+    return request.get(`/admin/tags/${id}`)
   },
   create(data) {
-    return request.post('/tags', data)
+    return request.post('/admin/tags', data)
   },
   update(id, data) {
-    return request.put(`/tags/${id}`, data)
+    return request.put(`/admin/tags/${id}`, data)
   },
   delete(id) {
-    return request.delete(`/tags/${id}`)
+    return request.delete(`/admin/tags/${id}`)
   }
 }
 
 export const bannerApi = {
   list() {
-    return request.get('/banners')
+    return request.get('/admin/banners')
   },
   get(id) {
-    return request.get(`/banners/${id}`)
+    return request.get(`/admin/banners/${id}`)
   },
   create(data) {
-    return request.post('/banners', data)
+    return request.post('/admin/banners', data)
   },
   update(id, data) {
-    return request.put(`/banners/${id}`, data)
+    return request.put(`/admin/banners/${id}`, data)
   },
   delete(id) {
-    return request.delete(`/banners/${id}`)
+    return request.delete(`/admin/banners/${id}`)
   }
 }
 
 export const customerApi = {
   list(params) {
-    return request.get('/customers', { params })
+    return request.get('/admin/customers', { params })
   },
   get(id) {
-    return request.get(`/customers/${id}`)
+    return request.get(`/admin/customers/${id}`)
   },
-  update(id, data) {
-    return request.put(`/customers/${id}`, data)
+  updateStatus(id, status) {
+    return request.patch(`/admin/customers/${id}/status`, { status })
+  },
+  updateRemark(id, remark) {
+    return request.patch(`/admin/customers/${id}/remark`, { remark })
   },
   delete(id) {
-    return request.delete(`/customers/${id}`)
+    return request.delete(`/admin/customers/${id}`)
   },
   export() {
-    return request.get('/customers/export', { responseType: 'blob' })
+    return request.get('/admin/customers/export', { responseType: 'blob' })
   }
 }
 
@@ -103,7 +103,7 @@ export const uploadApi = {
   upload(file) {
     const formData = new FormData()
     formData.append('file', file)
-    return request.post('/upload', formData, {
+    return request.post('/admin/upload/image', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
   }
@@ -111,6 +111,6 @@ export const uploadApi = {
 
 export const dashboardApi = {
   stats() {
-    return request.get('/dashboard/stats')
+    return request.get('/admin/dashboard')
   }
 }
