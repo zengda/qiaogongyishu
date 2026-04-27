@@ -89,13 +89,13 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { Grid, Box, List, Tag, Picture, User, Setting, Menu, Logout } from '@element-plus/icons-vue'
+import { Grid, Box, List, PriceTag, Picture, User, Setting, Menu, Close } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
 
-const icons = { Dashboard: Grid, Box, List, Tag, Image: Picture, User, Setting, Menu, Logout }
+const icons = { Dashboard: Grid, Box, List, Tag: PriceTag, Image: Picture, User, Setting, Menu, Logout: Close }
 
 const activeMenu = computed(() => {
   return route.path
