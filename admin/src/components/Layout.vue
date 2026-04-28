@@ -65,7 +65,6 @@
               <span>{{ sidebarCollapsed ? '' : '系统设置' }}</span>
             </template>
             <el-menu-item index="/settings/storage">{{ sidebarCollapsed ? '' : '存储配置' }}</el-menu-item>
-            <el-menu-item index="/settings/miniprogram">{{ sidebarCollapsed ? '' : '小程序设置' }}</el-menu-item>
             <el-menu-item index="/settings/customer-service">{{ sidebarCollapsed ? '' : '客服二维码设置' }}</el-menu-item>
             <el-menu-item index="/settings/change-password">{{ sidebarCollapsed ? '' : '修改密码' }}</el-menu-item>
           </el-sub-menu>
@@ -96,24 +95,16 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { Grid, Box, List, PriceTag, Picture, User, Setting, Menu, TurnOff } from '@element-plus/icons-vue'
+import { Grid, Box, List, PriceTag, Picture, User, Setting, Menu, Close } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
 
-const icons = { Dashboard: Grid, Box, List, Tag: PriceTag, Image: Picture, User, Setting, Menu, Logout: TurnOff }
+const icons = { Dashboard: Grid, Box, List, Tag: PriceTag, Image: Picture, User, Setting, Menu, Logout: Close }
 
 const activeMenu = computed(() => {
-  const path = route.path
-  const match = path.match(/^(\/[\w-]+)(\/[\w-]+)?(\/add|\/\d+\/edit)?$/)
-  if (match) {
-    if (path.includes('/edit')) {
-      return match[1]
-    }
-    return path
-  }
-  return path
+  return route.path
 })
 
 const sidebarCollapsed = computed(() => store.getters.sidebarCollapsed)

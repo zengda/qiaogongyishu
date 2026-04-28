@@ -1,5 +1,7 @@
 from flask import Blueprint, request
 from app.services.customer_service import CustomerService
+from app.extensions import db
+from app.models.customer import Customer
 from app.utils.response import success, error, paginated
 
 customer_bp = Blueprint('customer', __name__)
@@ -7,7 +9,7 @@ customer_bp = Blueprint('customer', __name__)
 @customer_bp.route('/customers', methods=['POST'])
 def create_customer():
     """创建客户"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     
     if not data.get('name') or not data.get('phone'):
         return error(400, '姓名和手机号为必填项'), 400
@@ -47,7 +49,7 @@ def get_customer_detail(customer_id):
 @customer_bp.route('/customers/<int:customer_id>/status', methods=['PATCH'])
 def update_customer_status(customer_id):
     """更新客户状态"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     status = data.get('status')
     
     if not status:
@@ -62,7 +64,7 @@ def update_customer_status(customer_id):
 @customer_bp.route('/customers/<int:customer_id>/remark', methods=['PATCH'])
 def update_customer_remark(customer_id):
     """更新客户备注"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     remark = data.get('remark')
     
     customer = CustomerService.update_customer_remark(customer_id, remark)
@@ -78,8 +80,6 @@ def delete_customer(customer_id):
     if not customer:
         return error(404, '客户不存在'), 404
     
-    from app.extensions import db
-    from app.models.customer import Customer
     customer_obj = Customer.query.get(customer_id)
     db.session.delete(customer_obj)
     db.session.commit()

@@ -80,7 +80,7 @@ def admin_get_products():
 @admin_required
 def admin_create_product():
     """创建产品"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     product = ProductService.create_product(data)
     if not product:
         return error(400, '创建失败'), 400
@@ -100,7 +100,7 @@ def admin_get_product(product_id):
 @admin_required
 def admin_update_product(product_id):
     """更新产品"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     product = ProductService.update_product(product_id, data)
     if not product:
         return error(404, '产品不存在'), 404
@@ -137,7 +137,7 @@ def admin_get_category(category_id):
 @admin_required
 def admin_create_category():
     """创建分类"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     name = data.get('name')
     if not name:
         return error(400, '分类名称不能为空'), 400
@@ -159,7 +159,7 @@ def admin_update_category(category_id):
     if not category:
         return error(404, '分类不存在'), 404
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     if 'name' in data:
         existing = Category.query.filter_by(name=data['name']).first()
         if existing and existing.id != category_id:
@@ -211,7 +211,7 @@ def admin_get_tag(tag_id):
 @admin_required
 def admin_create_tag():
     """创建标签"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     name = data.get('name')
     if not name:
         return error(400, '标签名称不能为空'), 400
@@ -233,7 +233,7 @@ def admin_update_tag(tag_id):
     if not tag:
         return error(404, '标签不存在'), 404
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     if 'name' in data:
         existing = Tag.query.filter_by(name=data['name']).first()
         if existing and existing.id != tag_id:
@@ -276,7 +276,7 @@ def admin_get_banners():
 @admin_required
 def admin_create_banner():
     """创建Banner"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     if not data.get('image_url'):
         return error(400, '图片URL不能为空'), 400
     
@@ -303,7 +303,7 @@ def admin_update_banner(banner_id):
     if not banner:
         return error(404, 'Banner不存在'), 404
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     if 'title' in data:
         banner.title = data['title']
     if 'image_url' in data:
@@ -364,7 +364,7 @@ def admin_get_customers():
 @admin_required
 def admin_create_customer():
     """创建客户"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     
     if not data.get('name') or not data.get('phone'):
         return error(400, '姓名和手机号为必填项'), 400
@@ -388,7 +388,7 @@ def admin_get_customer(customer_id):
 @admin_required
 def admin_update_customer_status(customer_id):
     """更新客户状态"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     status = data.get('status')
     if not status:
         return error(400, '请提供状态'), 400
@@ -402,7 +402,7 @@ def admin_update_customer_status(customer_id):
 @admin_required
 def admin_update_customer_remark(customer_id):
     """更新客户备注"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     remark = data.get('remark')
     
     customer = CustomerService.update_customer_remark(customer_id, remark)
@@ -484,7 +484,7 @@ def admin_get_settings():
 @admin_required
 def admin_update_settings():
     """更新系统设置"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     for key, value in data.items():
         setting = SystemSetting.query.filter_by(setting_key=key).first()
         if setting:
@@ -508,7 +508,7 @@ def admin_get_storage_config():
 @admin_required
 def admin_update_storage_config():
     """更新存储配置"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     
     active_config = StorageConfig.query.filter_by(is_active=True).first()
     if active_config:
@@ -544,7 +544,7 @@ def admin_change_password():
     from app.models.admin import Admin
     from werkzeug.security import check_password_hash, generate_password_hash
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     old_password = data.get('old_password')
     new_password = data.get('new_password')
     
@@ -573,7 +573,7 @@ def test_oss_connection():
     from app.utils.response import error
     import oss2
     
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     endpoint = data.get('endpoint')
     access_key_id = data.get('access_key_id')
     access_key_secret = data.get('access_key_secret')

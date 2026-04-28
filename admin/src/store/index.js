@@ -4,7 +4,7 @@ export default createStore({
   state: {
     token: localStorage.getItem('admin_token') || '',
     user: null,
-    sidebarCollapsed: localStorage.getItem('sidebar_collapsed') === 'true' || false
+    sidebarCollapsed: false
   },
   getters: {
     token: state => state.token,
@@ -21,7 +21,6 @@ export default createStore({
     },
     SET_SIDEBAR_COLLAPSED(state, collapsed) {
       state.sidebarCollapsed = collapsed
-      localStorage.setItem('sidebar_collapsed', collapsed.toString())
     },
     LOGOUT(state) {
       state.token = ''

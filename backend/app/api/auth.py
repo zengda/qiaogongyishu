@@ -3,6 +3,7 @@ import jwt
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
 from app.models.admin import Admin
+from app.extensions import db
 from app.utils.response import success, error
 
 auth_bp = Blueprint('auth', __name__)
@@ -10,7 +11,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/auth/wx-login', methods=['POST'])
 def wx_login():
     """微信登录（模拟实现）"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     code = data.get('code')
     
     if not code:
@@ -30,7 +31,7 @@ def wx_login():
 @auth_bp.route('/admin/auth/login', methods=['POST'])
 def admin_login():
     """管理员登录"""
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     username = data.get('username')
     password = data.get('password')
     
@@ -45,7 +46,6 @@ def admin_login():
         return error(401, '用户名或密码错误'), 401
     
     admin.last_login_at = datetime.now()
-    from app.extensions import db
     db.session.commit()
     
     token = jwt.encode({
@@ -73,7 +73,7 @@ def change_password():
     
     @admin_required
     def do_change():
-        data = request.get_json()
+        data = request.get_json(silent=True) or {}
         old_password = data.get('old_password')
         new_password = data.get('new_password')
         
@@ -85,7 +85,6 @@ def change_password():
             return error(400, '旧密码不正确'), 400
         
         admin.password_hash = generate_password_hash(new_password)
-        from app.extensions import db
         db.session.commit()
         
         return success(message='密码修改成功')
