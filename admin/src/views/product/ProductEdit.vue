@@ -67,27 +67,8 @@
         </div>
       </el-form-item>
       
-      <el-form-item label="详情图片">
-        <div class="detail-list">
-          <div 
-            class="detail-item" 
-            v-for="(img, index) in form.detail_images" 
-            :key="img.id || index"
-          >
-            <img :src="img.image_url || img" class="detail-image" />
-            <el-button type="text" @click="removeDetail(index)" style="color: #E53E3E">删除</el-button>
-          </div>
-          <div class="upload-area small" @click="triggerUpload('detail')">
-            <div class="upload-placeholder">
-              <el-icon><Plus /></el-icon>
-              <span>添加图片</span>
-            </div>
-          </div>
-        </div>
-      </el-form-item>
-      
-      <el-form-item label="描述">
-        <el-input type="textarea" v-model="form.description" placeholder="请输入产品描述" :rows="4" />
+      <el-form-item label="产品详情">
+        <div ref="editorRef" class="editor-container"></div>
       </el-form-item>
       
       <el-form-item>
@@ -101,11 +82,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Upload, Plus } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { productApi, categoryApi, tagApi, uploadApi } from '../../api'
+import E from 'wangeditor'
 
 const route = useRoute()
 const router = useRouter()
@@ -113,6 +95,8 @@ const formRef = ref(null)
 const fileInput = ref(null)
 const uploadType = ref('')
 const submitting = ref(false)
+const editorRef = ref(null)
+let editor = null
 
 const categories = ref([])
 const tags = ref([])
@@ -127,8 +111,7 @@ const form = reactive({
   rooms: '',
   cover_image: '',
   banner_images: [],
-  detail_images: [],
-  description: ''
+  detail: ''
 })
 
 const rules = {
@@ -136,6 +119,31 @@ const rules = {
   model_number: [{ required: true, message: '请输入产品型号', trigger: 'blur' }],
   category_id: [{ required: true, message: '请选择分类', trigger: 'blur' }],
   cover_image: [{ required: true, message: '请上传封面图片', trigger: 'blur' }]
+}
+
+const initEditor = () => {
+  editor = new E(editorRef.value)
+  
+  editor.config.uploadImgMaxSize = 5 * 1024 * 1024
+  editor.config.uploadImgMaxLength = 10
+  
+  editor.config.onchange = (html) => {
+    form.detail = html
+  }
+  
+  editor.config.customUpload = async (resultFiles, insertImgFn) => {
+    for (const file of resultFiles) {
+      try {
+        const result = await uploadApi.upload(file)
+        insertImgFn(result.url)
+      } catch (error) {
+        console.error('图片上传失败:', error)
+        ElMessage.error('图片上传失败')
+      }
+    }
+  }
+  
+  editor.create()
 }
 
 const loadProduct = async () => {
@@ -151,8 +159,11 @@ const loadProduct = async () => {
     form.rooms = product.rooms
     form.cover_image = product.cover_image
     form.banner_images = product.banner_images?.map(img => img.image_url) || []
-    form.detail_images = product.detail_images?.map(img => img.image_url) || []
-    form.description = product.description
+    form.detail = product.description
+    
+    if (editor) {
+      editor.txt.html(product.description || '')
+    }
   } catch (error) {
     console.error('加载产品失败:', error)
     ElMessage.error('加载产品失败')
@@ -183,8 +194,6 @@ const handleFileChange = async (e) => {
       form.cover_image = result.url
     } else if (uploadType.value === 'banner') {
       form.banner_images.push(result.url)
-    } else if (uploadType.value === 'detail') {
-      form.detail_images.push(result.url)
     }
     
     e.target.value = ''
@@ -196,10 +205,6 @@ const handleFileChange = async (e) => {
 
 const removeBanner = (index) => {
   form.banner_images.splice(index, 1)
-}
-
-const removeDetail = (index) => {
-  form.detail_images.splice(index, 1)
 }
 
 const handleSubmit = async () => {
@@ -219,8 +224,7 @@ const handleSubmit = async () => {
       rooms: form.rooms,
       cover_image: form.cover_image,
       banner_images: form.banner_images,
-      detail_images: form.detail_images,
-      description: form.description
+      detail: form.detail
     }
     
     await productApi.update(route.params.id, data)
@@ -234,9 +238,18 @@ const handleSubmit = async () => {
 }
 
 onMounted(() => {
-  loadProduct()
   loadCategories()
   loadTags()
+  initEditor()
+  setTimeout(() => {
+    loadProduct()
+  }, 100)
+})
+
+onUnmounted(() => {
+  if (editor) {
+    editor.destroy()
+  }
 })
 </script>
 
@@ -322,5 +335,11 @@ onMounted(() => {
 
 .hidden-input {
   display: none;
+}
+
+.editor-container {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  min-height: 400px;
 }
 </style>

@@ -5,6 +5,7 @@ from app.models.product_tag import ProductTag
 from app.models.category import Category
 from app.models.tag import Tag
 from app.utils.pagination import paginate
+from app.utils.response import paginated
 
 class ProductService:
     """产品服务"""
@@ -51,7 +52,7 @@ class ProductService:
             title=data['title'],
             model_number=data['model_number'],
             category_id=data.get('category_id'),
-            description=data.get('description'),
+            description=data.get('detail'),
             floor_area=data.get('floor_area'),
             building_area=data.get('building_area'),
             rooms=data.get('rooms'),
@@ -62,7 +63,6 @@ class ProductService:
         db.session.flush()
         
         banner_images = data.get('banner_images', [])
-        detail_images = data.get('detail_images', [])
         
         for i, img in enumerate(banner_images):
             image_url = img.image_url if hasattr(img, 'image_url') else img
@@ -71,16 +71,6 @@ class ProductService:
                     product_id=product.id,
                     image_url=image_url,
                     image_type='banner',
-                    sort_order=i
-                ))
-        
-        for i, img in enumerate(detail_images):
-            image_url = img.image_url if hasattr(img, 'image_url') else img
-            if image_url:
-                db.session.add(ProductImage(
-                    product_id=product.id,
-                    image_url=image_url,
-                    image_type='detail',
                     sort_order=i
                 ))
         
@@ -105,6 +95,8 @@ class ProductService:
             product.category_id = data['category_id']
         if 'description' in data:
             product.description = data['description']
+        if 'detail' in data:
+            product.description = data['detail']
         if 'floor_area' in data:
             product.floor_area = data['floor_area']
         if 'building_area' in data:
@@ -125,18 +117,6 @@ class ProductService:
                         product_id=product.id,
                         image_url=image_url,
                         image_type='banner',
-                        sort_order=i
-                    ))
-        
-        if 'detail_images' in data:
-            ProductImage.query.filter_by(product_id=product_id, image_type='detail').delete()
-            for i, img in enumerate(data['detail_images']):
-                image_url = img.image_url if hasattr(img, 'image_url') else img
-                if image_url:
-                    db.session.add(ProductImage(
-                        product_id=product.id,
-                        image_url=image_url,
-                        image_type='detail',
                         sort_order=i
                     ))
         
