@@ -31,7 +31,7 @@ const routes = [
       { path: '/customers/:id', name: 'CustomerDetail', component: () => import('../views/customer/CustomerDetail.vue') },
       { path: '/settings/storage', name: 'StorageConfig', component: () => import('../views/settings/StorageConfig.vue') },
       { path: '/settings/customer-service', name: 'CustomerService', component: () => import('../views/settings/CustomerService.vue') },
-      { path: '/settings/miniprogram', name: 'MiniprogramConfig', component: () => import('../views/settings/MiniprogramConfig.vue') },
+      { path: '/settings/miniprogram', name: 'MiniprogramConfig', component: () => import('../views/settings/MiniProgramConfig.vue') },
       { path: '/settings/change-password', name: 'ChangePassword', component: () => import('../views/settings/ChangePassword.vue') }
     ]
   }
@@ -42,7 +42,7 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   if (to.path !== '/login') {
     const token = store.getters.token || localStorage.getItem('admin_token')
     if (!token) {
