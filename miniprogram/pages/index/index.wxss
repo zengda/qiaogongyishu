@@ -1,5 +1,5 @@
 .container {
-  padding-bottom: 40rpx;
+  padding: 0 0 40rpx 0;
   background: #f7f8fa;
 }
 

@@ -26,10 +26,13 @@ Page({
         get('/tags')
       ])
       
+      const activeCategory = categories.length > 0 ? categories[0].id : 0
+      
       this.setData({
         banners,
         categories,
-        tags: [{ id: 0, name: '全部' }, ...tags]
+        tags: [{ id: 0, name: '全部' }, ...tags],
+        activeCategory
       })
       
       await this.loadProducts()

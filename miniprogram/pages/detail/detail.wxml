@@ -51,6 +51,7 @@
         mode="widthFix" 
         lazy-load
         bindtap="onDetailImageTap"
+        data-index="{{index}}"
       />
     </view>
   </view>
