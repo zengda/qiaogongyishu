@@ -13,6 +13,7 @@
       <nav class="sidebar-nav">
         <el-menu
           :default-active="activeMenu"
+          :router="true"
           mode="vertical"
           background-color="#2D3748"
           text-color="#CBD5E0"
@@ -58,10 +59,15 @@
             <el-icon><component :is="icons.User" /></el-icon>
             <span>{{ sidebarCollapsed ? '' : '客户管理' }}</span>
           </el-menu-item>
-          <el-menu-item index="/settings">
-            <el-icon><component :is="icons.Setting" /></el-icon>
-            <span>{{ sidebarCollapsed ? '' : '系统设置' }}</span>
-          </el-menu-item>
+          <el-sub-menu index="/settings">
+            <template #title>
+              <el-icon><component :is="icons.Setting" /></el-icon>
+              <span>{{ sidebarCollapsed ? '' : '系统设置' }}</span>
+            </template>
+            <el-menu-item index="/settings/storage">{{ sidebarCollapsed ? '' : '存储配置' }}</el-menu-item>
+            <el-menu-item index="/settings/customer-service">{{ sidebarCollapsed ? '' : '客服二维码设置' }}</el-menu-item>
+            <el-menu-item index="/settings/change-password">{{ sidebarCollapsed ? '' : '修改密码' }}</el-menu-item>
+          </el-sub-menu>
         </el-menu>
       </nav>
     </aside>
@@ -219,5 +225,6 @@ const handleLogout = () => {
   flex: 1;
   padding: 24px;
   overflow-y: auto;
+  background-color: #f5f7fa;
 }
 </style>

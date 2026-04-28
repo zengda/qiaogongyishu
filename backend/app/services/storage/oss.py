@@ -5,13 +5,23 @@ from app.services.storage.base import StorageBackend
 class OSSStorage(StorageBackend):
     """阿里云OSS存储实现"""
     
-    def __init__(self, access_key_id, access_key_secret, bucket_name, endpoint, cdn_domain=None, custom_domain=None):
+    def __init__(self, access_key_id, access_key_secret, bucket_name, endpoint, 
+                 cdn_domain=None, custom_domain=None, bucket_domain=None, https_enabled=False):
         self.auth = Auth(access_key_id, access_key_secret)
-        self.bucket = Bucket(self.auth, endpoint, bucket_name)
         self.bucket_name = bucket_name
         self.endpoint = endpoint
         self.cdn_domain = cdn_domain
         self.custom_domain = custom_domain
+        self.bucket_domain = bucket_domain
+        self.https_enabled = https_enabled
+        
+        # 根据 HTTPS 配置选择协议
+        protocol = 'https' if https_enabled else 'http'
+        if bucket_domain:
+            bucket_url = f"{protocol}://{bucket_domain}"
+        else:
+            bucket_url = f"{protocol}://{endpoint}"
+        self.bucket = Bucket(self.auth, bucket_url, bucket_name)
     
     def upload(self, file, filename):
         ext = filename.rsplit('.', 1)[-1].lower()
@@ -28,9 +38,12 @@ class OSSStorage(StorageBackend):
             return False
     
     def get_url(self, filename):
+        protocol = 'https' if self.https_enabled else 'http'
         if self.cdn_domain:
-            return f"{self.cdn_domain}/{filename}"
+            return f"{protocol}://{self.cdn_domain}/{filename}"
         elif self.custom_domain:
-            return f"{self.custom_domain}/{filename}"
+            return f"{protocol}://{self.custom_domain}/{filename}"
+        elif self.bucket_domain:
+            return f"{protocol}://{self.bucket_domain}/{filename}"
         else:
-            return f"https://{self.bucket_name}.{self.endpoint}/{filename}"
+            return f"{protocol}://{self.bucket_name}.{self.endpoint}/{filename}"

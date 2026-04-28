@@ -16,11 +16,59 @@ def get_setting(key):
 
 @settings_bp.route('/storage/config', methods=['GET'])
 def get_storage_config():
-    """获取存储配置（公开）"""
+    """获取存储配置"""
     config = StorageConfig.query.filter_by(is_active=True).first()
     if not config:
-        return error(404, '存储配置不存在'), 404
-    return success({'storage_type': config.storage_type})
+        # 如果没有配置，返回默认值
+        return success({
+            'storage_type': 'local',
+            'storage_config': {}
+        })
+    return success({
+        'storage_type': config.storage_type,
+        'storage_config': {
+            'oss_endpoint': config.oss_endpoint,
+            'oss_access_key_id': config.oss_access_key_id,
+            'oss_access_key_secret': config.oss_access_key_secret,
+            'oss_bucket_name': config.oss_bucket_name,
+            'oss_bucket_domain': config.oss_bucket_domain,
+            'oss_https_enabled': config.oss_https_enabled,
+            'oss_custom_domain': config.oss_custom_domain
+        }
+    })
+
+@settings_bp.route('/storage/config', methods=['PUT'])
+def update_storage_config():
+    """更新存储配置"""
+    data = request.get_json()
+    if not data:
+        return error(400, '请求数据为空'), 400
+    
+    storage_type = data.get('storage_type', 'local')
+    oss_config = data.get('oss_config', {})
+    
+    # 获取或创建配置
+    config = StorageConfig.query.filter_by(is_active=True).first()
+    if not config:
+        config = StorageConfig()
+    
+    # 更新配置
+    config.storage_type = storage_type
+    config.is_active = True
+    
+    if storage_type == 'oss':
+        config.oss_endpoint = oss_config.get('endpoint', '')
+        config.oss_access_key_id = oss_config.get('access_key_id', '')
+        config.oss_access_key_secret = oss_config.get('access_key_secret', '')
+        config.oss_bucket_name = oss_config.get('bucket_name', '')
+        config.oss_bucket_domain = oss_config.get('bucket_domain', '')
+        config.oss_https_enabled = oss_config.get('https_enabled', False)
+        config.oss_custom_domain = oss_config.get('custom_domain', '')
+    
+    db.session.add(config)
+    db.session.commit()
+    
+    return success({'message': '配置保存成功'})
 
 @settings_bp.route('/settings', methods=['PUT'])
 def update_settings():

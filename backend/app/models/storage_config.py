@@ -11,7 +11,9 @@ class StorageConfig(db.Model):
     oss_access_key_id = db.Column(db.String(200))
     oss_access_key_secret = db.Column(db.String(500))
     oss_bucket_name = db.Column(db.String(200))
+    oss_bucket_domain = db.Column(db.String(500))
     oss_endpoint = db.Column(db.String(500))
+    oss_https_enabled = db.Column(db.Boolean, default=False)
     oss_cdn_domain = db.Column(db.String(500))
     oss_custom_domain = db.Column(db.String(500))
     oss_region = db.Column(db.String(100))
@@ -29,15 +31,17 @@ class StorageConfig(db.Model):
             'local_upload_path': self.local_upload_path,
             'oss_access_key_id': self.oss_access_key_id,
             'oss_bucket_name': self.oss_bucket_name,
+            'oss_bucket_domain': self.oss_bucket_domain,
             'oss_endpoint': self.oss_endpoint,
+            'oss_https_enabled': self.oss_https_enabled,
             'oss_cdn_domain': self.oss_cdn_domain,
             'oss_custom_domain': self.oss_custom_domain,
             'oss_region': self.oss_region,
             'max_file_size': self.max_file_size,
             'allowed_extensions': self.allowed_extensions,
             'is_active': self.is_active,
-            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            'updated_at': self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at else None,
+            'created_at': self.created_at.strftime('%Y-%m-%d %H:%M:%S') if self.created_at else None
         }
         if include_secret:
             result['oss_access_key_secret'] = self.oss_access_key_secret

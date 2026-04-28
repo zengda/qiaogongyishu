@@ -15,7 +15,7 @@
       </el-form-item>
       
       <el-form-item>
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitting">保存</el-button>
         <el-button @click="$router.back()">取消</el-button>
       </el-form-item>
     </el-form>
@@ -24,9 +24,13 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { tagApi } from '../../api'
 
+const router = useRouter()
 const formRef = ref(null)
+const submitting = ref(false)
 
 const form = reactive({
   name: '',
@@ -42,10 +46,14 @@ const handleSubmit = async () => {
   
   try {
     await formRef.value.validate()
+    submitting.value = true
     await tagApi.create(form)
-    window.location.href = '/tags'
+    ElMessage.success('添加成功')
+    router.push('/tags')
   } catch (error) {
     console.error('保存失败:', error)
+  } finally {
+    submitting.value = false
   }
 }
 </script>

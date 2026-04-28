@@ -12,9 +12,16 @@
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column prop="name" label="分类名称" />
       <el-table-column prop="sort_order" label="排序" />
-      <el-table-column prop="status" label="状态">
+      <el-table-column prop="is_active" label="状态">
         <template #default="scope">
-          <el-switch :value="scope.row.status === 'active'" @change="toggleStatus(scope.row.id, $event)" />
+          <el-tag :type="scope.row.is_active ? 'success' : 'info'">
+            {{ scope.row.is_active ? '启用' : '禁用' }}
+          </el-tag>
+          <el-switch 
+            v-model="scope.row.is_active" 
+            style="margin-left: 8px"
+            @change="toggleStatus(scope.row.id, $event)" 
+          />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="180">
@@ -29,9 +36,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { categoryApi } from '../../api'
 
+const router = useRouter()
 const categories = ref([])
 
 const loadCategories = async () => {
@@ -39,27 +49,37 @@ const loadCategories = async () => {
     categories.value = await categoryApi.list()
   } catch (error) {
     console.error('加载分类失败:', error)
+    ElMessage.error('加载分类失败')
   }
 }
 
 const editCategory = (id) => {
-  window.location.href = `/categories/${id}/edit`
+  router.push(`/categories/${id}/edit`)
 }
 
 const deleteCategory = async (id) => {
   try {
+    await ElMessageBox.confirm('确定要删除该分类吗？', '提示', {
+      type: 'warning'
+    })
     await categoryApi.delete(id)
+    ElMessage.success('删除成功')
     loadCategories()
   } catch (error) {
-    console.error('删除分类失败:', error)
+    if (error !== 'cancel') {
+      console.error('删除分类失败:', error)
+      ElMessage.error('删除分类失败')
+    }
   }
 }
 
 const toggleStatus = async (id, value) => {
   try {
-    await categoryApi.update(id, { status: value ? 'active' : 'inactive' })
+    await categoryApi.update(id, { is_active: value })
+    ElMessage.success(value ? '已启用' : '已禁用')
   } catch (error) {
     console.error('更新状态失败:', error)
+    ElMessage.error('更新状态失败')
     loadCategories()
   }
 }

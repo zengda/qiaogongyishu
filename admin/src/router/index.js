@@ -28,7 +28,9 @@ const routes = [
       { path: '/banners/:id/edit', name: 'BannerEdit', component: () => import('../views/banner/BannerEdit.vue') },
       { path: '/customers', name: 'CustomerList', component: () => import('../views/customer/CustomerList.vue') },
       { path: '/customers/:id', name: 'CustomerDetail', component: () => import('../views/customer/CustomerDetail.vue') },
-      { path: '/settings', name: 'Settings', component: () => import('../views/settings/Settings.vue') }
+      { path: '/settings/storage', name: 'StorageConfig', component: () => import('../views/settings/StorageConfig.vue') },
+      { path: '/settings/customer-service', name: 'CustomerService', component: () => import('../views/settings/CustomerService.vue') },
+      { path: '/settings/change-password', name: 'ChangePassword', component: () => import('../views/settings/ChangePassword.vue') }
     ]
   }
 ]
@@ -40,7 +42,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.path !== '/login') {
-    const token = store.getters.token
+    const token = store.getters.token || localStorage.getItem('admin_token')
     if (!token) {
       next('/login')
     } else {

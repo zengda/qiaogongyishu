@@ -55,7 +55,7 @@
             v-for="(img, index) in form.banner_images" 
             :key="img.id || index"
           >
-            <img :src="img.image_url" class="banner-image" />
+            <img :src="img.image_url || img" class="banner-image" />
             <el-button type="text" @click="removeBanner(index)" style="color: #E53E3E">删除</el-button>
           </div>
           <div class="upload-area small" @click="triggerUpload('banner')">
@@ -74,7 +74,7 @@
             v-for="(img, index) in form.detail_images" 
             :key="img.id || index"
           >
-            <img :src="img.image_url" class="detail-image" />
+            <img :src="img.image_url || img" class="detail-image" />
             <el-button type="text" @click="removeDetail(index)" style="color: #E53E3E">删除</el-button>
           </div>
           <div class="upload-area small" @click="triggerUpload('detail')">
@@ -87,11 +87,11 @@
       </el-form-item>
       
       <el-form-item label="描述">
-        <el-textarea v-model="form.description" placeholder="请输入产品描述" :rows="4" />
+        <el-input type="textarea" v-model="form.description" placeholder="请输入产品描述" :rows="4" />
       </el-form-item>
       
       <el-form-item>
-        <el-button type="primary" @click="handleSubmit">保存</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitting">保存</el-button>
         <el-button @click="$router.back()">取消</el-button>
       </el-form-item>
     </el-form>
@@ -102,14 +102,17 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Upload, Plus } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { productApi, categoryApi, tagApi, uploadApi } from '../../api'
 
 const route = useRoute()
+const router = useRouter()
 const formRef = ref(null)
 const fileInput = ref(null)
 const uploadType = ref('')
+const submitting = ref(false)
 
 const categories = ref([])
 const tags = ref([])
@@ -147,11 +150,12 @@ const loadProduct = async () => {
     form.building_area = product.building_area
     form.rooms = product.rooms
     form.cover_image = product.cover_image
-    form.banner_images = product.banner_images || []
-    form.detail_images = product.detail_images || []
+    form.banner_images = product.banner_images?.map(img => img.image_url) || []
+    form.detail_images = product.detail_images?.map(img => img.image_url) || []
     form.description = product.description
   } catch (error) {
     console.error('加载产品失败:', error)
+    ElMessage.error('加载产品失败')
   }
 }
 
@@ -178,14 +182,15 @@ const handleFileChange = async (e) => {
     if (uploadType.value === 'cover') {
       form.cover_image = result.url
     } else if (uploadType.value === 'banner') {
-      form.banner_images.push({ image_url: result.url })
+      form.banner_images.push(result.url)
     } else if (uploadType.value === 'detail') {
-      form.detail_images.push({ image_url: result.url })
+      form.detail_images.push(result.url)
     }
     
     e.target.value = ''
   } catch (error) {
     console.error('上传失败:', error)
+    ElMessage.error('上传失败')
   }
 }
 
@@ -202,16 +207,29 @@ const handleSubmit = async () => {
   
   try {
     await formRef.value.validate()
+    submitting.value = true
     
     const data = {
-      ...form,
-      tag_ids: form.tag_ids
+      title: form.title,
+      model_number: form.model_number,
+      category_id: form.category_id,
+      tags: form.tag_ids,
+      floor_area: form.floor_area,
+      building_area: form.building_area,
+      rooms: form.rooms,
+      cover_image: form.cover_image,
+      banner_images: form.banner_images,
+      detail_images: form.detail_images,
+      description: form.description
     }
     
     await productApi.update(route.params.id, data)
-    window.location.href = '/products'
+    ElMessage.success('保存成功')
+    router.push('/products')
   } catch (error) {
     console.error('保存失败:', error)
+  } finally {
+    submitting.value = false
   }
 }
 

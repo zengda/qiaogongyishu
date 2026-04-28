@@ -64,21 +64,25 @@ class ProductService:
         banner_images = data.get('banner_images', [])
         detail_images = data.get('detail_images', [])
         
-        for i, img_url in enumerate(banner_images):
-            db.session.add(ProductImage(
-                product_id=product.id,
-                image_url=img_url,
-                image_type='banner',
-                sort_order=i
-            ))
+        for i, img in enumerate(banner_images):
+            image_url = img.image_url if hasattr(img, 'image_url') else img
+            if image_url:
+                db.session.add(ProductImage(
+                    product_id=product.id,
+                    image_url=image_url,
+                    image_type='banner',
+                    sort_order=i
+                ))
         
-        for i, img_url in enumerate(detail_images):
-            db.session.add(ProductImage(
-                product_id=product.id,
-                image_url=img_url,
-                image_type='detail',
-                sort_order=i
-            ))
+        for i, img in enumerate(detail_images):
+            image_url = img.image_url if hasattr(img, 'image_url') else img
+            if image_url:
+                db.session.add(ProductImage(
+                    product_id=product.id,
+                    image_url=image_url,
+                    image_type='detail',
+                    sort_order=i
+                ))
         
         tags = data.get('tags', [])
         for tag_id in tags:
@@ -114,23 +118,27 @@ class ProductService:
         
         if 'banner_images' in data:
             ProductImage.query.filter_by(product_id=product_id, image_type='banner').delete()
-            for i, img_url in enumerate(data['banner_images']):
-                db.session.add(ProductImage(
-                    product_id=product.id,
-                    image_url=img_url,
-                    image_type='banner',
-                    sort_order=i
-                ))
+            for i, img in enumerate(data['banner_images']):
+                image_url = img.image_url if hasattr(img, 'image_url') else img
+                if image_url:
+                    db.session.add(ProductImage(
+                        product_id=product.id,
+                        image_url=image_url,
+                        image_type='banner',
+                        sort_order=i
+                    ))
         
         if 'detail_images' in data:
             ProductImage.query.filter_by(product_id=product_id, image_type='detail').delete()
-            for i, img_url in enumerate(data['detail_images']):
-                db.session.add(ProductImage(
-                    product_id=product.id,
-                    image_url=img_url,
-                    image_type='detail',
-                    sort_order=i
-                ))
+            for i, img in enumerate(data['detail_images']):
+                image_url = img.image_url if hasattr(img, 'image_url') else img
+                if image_url:
+                    db.session.add(ProductImage(
+                        product_id=product.id,
+                        image_url=image_url,
+                        image_type='detail',
+                        sort_order=i
+                    ))
         
         if 'tags' in data:
             ProductTag.query.filter_by(product_id=product_id).delete()

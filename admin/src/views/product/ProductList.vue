@@ -29,9 +29,16 @@
       <el-table-column prop="building_area" label="占地面积" />
       <el-table-column prop="category_name" label="分类" />
       <el-table-column prop="view_count" label="浏览量" />
-      <el-table-column prop="status" label="状态">
+      <el-table-column prop="is_active" label="状态">
         <template #default="scope">
-          <el-switch :value="scope.row.status === 'active'" @change="toggleStatus(scope.row.id, $event)" />
+          <el-tag :type="scope.row.is_active ? 'success' : 'info'">
+            {{ scope.row.is_active ? '启用' : '禁用' }}
+          </el-tag>
+          <el-switch 
+            v-model="scope.row.is_active" 
+            style="margin-left: 8px"
+            @change="toggleStatus(scope.row.id, $event)" 
+          />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="180">
@@ -54,9 +61,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Plus, Search } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { productApi, categoryApi } from '../../api'
 
+const router = useRouter()
 const products = ref([])
 const categories = ref([])
 const pagination = reactive({
@@ -84,6 +94,7 @@ const loadProducts = async () => {
     pagination.page = result.page
   } catch (error) {
     console.error('加载产品列表失败:', error)
+    ElMessage.error('加载产品列表失败')
   }
 }
 
@@ -113,23 +124,32 @@ const handlePageChange = (page) => {
 }
 
 const editProduct = (id) => {
-  window.location.href = `/products/${id}/edit`
+  router.push(`/products/${id}/edit`)
 }
 
 const deleteProduct = async (id) => {
   try {
+    await ElMessageBox.confirm('确定要删除该产品吗？', '提示', {
+      type: 'warning'
+    })
     await productApi.delete(id)
+    ElMessage.success('删除成功')
     loadProducts()
   } catch (error) {
-    console.error('删除产品失败:', error)
+    if (error !== 'cancel') {
+      console.error('删除产品失败:', error)
+      ElMessage.error('删除产品失败')
+    }
   }
 }
 
 const toggleStatus = async (id, value) => {
   try {
-    await productApi.update(id, { status: value ? 'active' : 'inactive' })
+    await productApi.update(id, { is_active: value })
+    ElMessage.success(value ? '已启用' : '已禁用')
   } catch (error) {
     console.error('更新状态失败:', error)
+    ElMessage.error('更新状态失败')
     loadProducts()
   }
 }

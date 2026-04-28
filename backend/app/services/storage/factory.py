@@ -19,12 +19,14 @@ def get_storage_backend():
                 config.oss_bucket_name,
                 config.oss_endpoint,
                 config.oss_cdn_domain,
-                config.oss_custom_domain
+                config.oss_custom_domain,
+                config.oss_bucket_domain,
+                config.oss_https_enabled
             )
         else:
             _storage_backend = LocalStorage(
                 config.local_upload_path or '/uploads',
-                config.local_base_url or 'http://localhost:5000/uploads'
+                config.local_base_url or 'http://localhost:5001/uploads'
             )
     return _storage_backend
 

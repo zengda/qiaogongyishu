@@ -45,6 +45,8 @@ def init_data():
     if not StorageConfig.query.first():
         storage_config = StorageConfig(
             storage_type='local',
+            local_upload_path='uploads',
+            local_base_url='/uploads',
             is_active=True
         )
         db.session.add(storage_config)

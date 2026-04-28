@@ -88,6 +88,15 @@ def admin_get_categories():
     categories = Category.query.order_by(Category.sort_order).all()
     return success([cat.to_dict() for cat in categories])
 
+@admin_bp.route('/categories/<int:category_id>', methods=['GET'])
+@admin_required
+def admin_get_category(category_id):
+    """获取单个分类"""
+    category = Category.query.get(category_id)
+    if not category:
+        return error(404, '分类不存在'), 404
+    return success(category.to_dict())
+
 @admin_bp.route('/categories', methods=['POST'])
 @admin_required
 def admin_create_category():
@@ -122,6 +131,8 @@ def admin_update_category(category_id):
         category.name = data['name']
     if 'sort_order' in data:
         category.sort_order = data['sort_order']
+    if 'is_active' in data:
+        category.is_active = data['is_active']
     
     db.session.commit()
     CacheService.clear_cache('categories')
@@ -150,6 +161,15 @@ def admin_get_tags():
     """获取标签列表"""
     tags = Tag.query.order_by(Tag.sort_order).all()
     return success([t.to_dict() for t in tags])
+
+@admin_bp.route('/tags/<int:tag_id>', methods=['GET'])
+@admin_required
+def admin_get_tag(tag_id):
+    """获取单个标签"""
+    tag = Tag.query.get(tag_id)
+    if not tag:
+        return error(404, '标签不存在'), 404
+    return success(tag.to_dict())
 
 @admin_bp.route('/tags', methods=['POST'])
 @admin_required
@@ -185,6 +205,8 @@ def admin_update_tag(tag_id):
         tag.name = data['name']
     if 'sort_order' in data:
         tag.sort_order = data['sort_order']
+    if 'is_active' in data:
+        tag.is_active = data['is_active']
     
     db.session.commit()
     CacheService.clear_cache('tags')
@@ -388,6 +410,15 @@ def admin_export_customers():
         download_name='customers.xlsx'
     )
 
+@admin_bp.route('/settings/<string:key>', methods=['GET'])
+@admin_required
+def admin_get_setting(key):
+    """获取单个系统设置"""
+    setting = SystemSetting.query.filter_by(setting_key=key).first()
+    if not setting:
+        return success({'value': ''})
+    return success({'value': setting.setting_value})
+
 @admin_bp.route('/settings', methods=['GET'])
 @admin_required
 def admin_get_settings():
@@ -439,7 +470,9 @@ def admin_update_storage_config():
         oss_access_key_id=data.get('oss_access_key_id'),
         oss_access_key_secret=data.get('oss_access_key_secret'),
         oss_bucket_name=data.get('oss_bucket_name'),
+        oss_bucket_domain=data.get('oss_bucket_domain'),
         oss_endpoint=data.get('oss_endpoint'),
+        oss_https_enabled=data.get('oss_https_enabled', False),
         oss_cdn_domain=data.get('oss_cdn_domain'),
         oss_custom_domain=data.get('oss_custom_domain'),
         oss_region=data.get('oss_region'),
@@ -452,3 +485,80 @@ def admin_update_storage_config():
     db.session.commit()
     reset_storage_backend()
     return success(new_config.to_dict(include_secret=True))
+
+@admin_bp.route('/profile/password', methods=['PUT'])
+@admin_required
+def admin_change_password():
+    """修改密码"""
+    from app.models.admin import Admin
+    from werkzeug.security import check_password_hash, generate_password_hash
+    
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+    
+    if not old_password or not new_password:
+        return error(400, '请提供当前密码和新密码'), 400
+    
+    # 获取当前管理员
+    admin_user = Admin.query.filter_by(username='admin').first()
+    if not admin_user:
+        return error(404, '管理员不存在'), 404
+    
+    # 验证当前密码
+    if not check_password_hash(admin_user.password_hash, old_password):
+        return error(400, '当前密码错误'), 400
+    
+    # 更新密码
+    admin_user.password_hash = generate_password_hash(new_password)
+    db.session.commit()
+    
+    return success({'message': '密码修改成功'})
+
+@admin_bp.route('/storage/test-oss', methods=['POST'])
+@admin_required
+def test_oss_connection():
+    """测试阿里云OSS连接"""
+    from app.utils.response import error
+    import oss2
+    
+    data = request.get_json()
+    endpoint = data.get('endpoint')
+    access_key_id = data.get('access_key_id')
+    access_key_secret = data.get('access_key_secret')
+    bucket_name = data.get('bucket_name')
+    https_enabled = data.get('https_enabled', False)
+    bucket_domain = data.get('bucket_domain')
+    
+    if not all([endpoint, access_key_id, access_key_secret, bucket_name]):
+        return error(400, '缺少必要的参数'), 400
+    
+    try:
+        auth = oss2.Auth(access_key_id, access_key_secret)
+        
+        # 根据 HTTPS 配置选择协议
+        protocol = 'https' if https_enabled else 'http'
+        if bucket_domain:
+            bucket_url = f"{protocol}://{bucket_domain}"
+        else:
+            bucket_url = f"{protocol}://{endpoint}"
+        
+        bucket = oss2.Bucket(auth, bucket_url, bucket_name)
+        
+        # 获取Bucket信息以验证连接
+        bucket_info = bucket.get_bucket_info()
+        
+        result = {
+            'message': 'OSS 连接测试成功',
+            'bucket_name': bucket_name,
+            'bucket_region': bucket_info.bucket.location if hasattr(bucket_info, 'location') else 'unknown',
+            'storage_size': bucket_info.bucket.storage_size if hasattr(bucket_info, 'bucket') else 'unknown'
+        }
+        
+        return success(result)
+    except oss2.exceptions.ServerError as e:
+        return error(400, f'OSS 连接失败: {str(e)}'), 400
+    except oss2.exceptions.RequestError as e:
+        return error(400, f'网络请求失败: {str(e)}'), 400
+    except Exception as e:
+        return error(400, f'连接失败: {str(e)}'), 400

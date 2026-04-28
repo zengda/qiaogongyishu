@@ -12,9 +12,16 @@
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column prop="name" label="标签名称" />
       <el-table-column prop="sort_order" label="排序" />
-      <el-table-column prop="status" label="状态">
+      <el-table-column prop="is_active" label="状态">
         <template #default="scope">
-          <el-switch :value="scope.row.status === 'active'" @change="toggleStatus(scope.row.id, $event)" />
+          <el-tag :type="scope.row.is_active ? 'success' : 'info'">
+            {{ scope.row.is_active ? '启用' : '禁用' }}
+          </el-tag>
+          <el-switch 
+            v-model="scope.row.is_active" 
+            style="margin-left: 8px"
+            @change="toggleStatus(scope.row.id, $event)" 
+          />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="180">
@@ -29,9 +36,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { tagApi } from '../../api'
 
+const router = useRouter()
 const tags = ref([])
 
 const loadTags = async () => {
@@ -39,27 +49,37 @@ const loadTags = async () => {
     tags.value = await tagApi.list()
   } catch (error) {
     console.error('加载标签失败:', error)
+    ElMessage.error('加载标签失败')
   }
 }
 
 const editTag = (id) => {
-  window.location.href = `/tags/${id}/edit`
+  router.push(`/tags/${id}/edit`)
 }
 
 const deleteTag = async (id) => {
   try {
+    await ElMessageBox.confirm('确定要删除该标签吗？', '提示', {
+      type: 'warning'
+    })
     await tagApi.delete(id)
+    ElMessage.success('删除成功')
     loadTags()
   } catch (error) {
-    console.error('删除标签失败:', error)
+    if (error !== 'cancel') {
+      console.error('删除标签失败:', error)
+      ElMessage.error('删除标签失败')
+    }
   }
 }
 
 const toggleStatus = async (id, value) => {
   try {
-    await tagApi.update(id, { status: value ? 'active' : 'inactive' })
+    await tagApi.update(id, { is_active: value })
+    ElMessage.success(value ? '已启用' : '已禁用')
   } catch (error) {
     console.error('更新状态失败:', error)
+    ElMessage.error('更新状态失败')
     loadTags()
   }
 }
