@@ -8,9 +8,16 @@
     </view>
   </view>
   
-  <category-nav categories="{{categories}}" active-category="{{activeCategory}}" show-style-filter="{{showStyleFilter}}" bind:change="onCategoryChange" bind:style-tap="onStyleTap"></category-nav>
-  
-  <style-filter tags="{{tags}}" active-tag="{{activeTag}}" visible="{{showStyleFilter}}" bind:change="onTagChange"></style-filter>
+  <category-nav 
+    categories="{{categories}}" 
+    active-category="{{activeCategory}}" 
+    show-style-filter="{{showStyleFilter}}"
+    tags="{{tags}}"
+    active-tag="{{activeTag}}"
+    bind:change="onCategoryChange" 
+    bind:styleTap="onStyleTap"
+    bind:tagChange="onTagChange"
+  ></category-nav>
   
   <view class="product-list">
     <view 
@@ -20,7 +27,12 @@
       bindtap="onProductClick" 
       data-id="{{item.id}}"
     >
-      <image class="product-image" src="{{item.cover_image}}" mode="aspectFill" lazy-load />
+      <view class="product-image-wrapper">
+        <image wx:if="{{item.cover_image}}" class="product-image" src="{{item.cover_image}}" mode="aspectFill" lazy-load />
+        <view wx:else class="product-image-placeholder">
+          <text class="placeholder-icon">🏠</text>
+        </view>
+      </view>
       <view class="product-info">
         <text class="product-title">{{item.title}}</text>
         <view class="product-meta">

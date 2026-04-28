@@ -1,9 +1,11 @@
 import os
+from flask_cors import CORS
 from app import create_app
 from app.extensions import db
 from app.models import init_data
 
 app = create_app(os.getenv('FLASK_ENV', 'default'))
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 @app.cli.command('init-db')
 def init_db():

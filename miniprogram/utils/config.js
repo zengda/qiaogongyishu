@@ -1,5 +1,5 @@
 module.exports = {
-  apiBaseUrl: 'http://localhost:5000/api/v1',
+  apiBaseUrl: 'http://localhost:5001/api/v1',
   
   categoryNames: ['一层', '二层', '三层', '多层', '双拼'],
   

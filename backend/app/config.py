@@ -17,7 +17,7 @@ class Config:
     
     STORAGE_TYPE = os.getenv('STORAGE_TYPE', 'local')
     LOCAL_UPLOAD_PATH = os.getenv('LOCAL_UPLOAD_PATH', '/uploads')
-    LOCAL_BASE_URL = os.getenv('LOCAL_BASE_URL', 'http://localhost:5000/uploads')
+    LOCAL_BASE_URL = os.getenv('LOCAL_BASE_URL', 'http://localhost:5001/uploads')
     
     OSS_ACCESS_KEY_ID = os.getenv('OSS_ACCESS_KEY_ID', '')
     OSS_ACCESS_KEY_SECRET = os.getenv('OSS_ACCESS_KEY_SECRET', '')

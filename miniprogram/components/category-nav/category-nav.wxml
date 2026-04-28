@@ -1,4 +1,4 @@
-<scroll-view class="category-scroll" scroll-x>
+<view class="category-section">
   <view class="category-list">
     <view 
       class="category-item {{activeCategory === item.id ? 'active' : ''}}"
@@ -10,10 +10,24 @@
       <text>{{item.name}}</text>
     </view>
     <view 
-      class="category-item style-btn {{showStyleFilter ? 'active' : ''}}"
+      class="category-item filter-btn {{showStyleFilter ? 'active' : ''}}"
       bindtap="onStyleTap"
     >
       <text>🏷风格</text>
     </view>
   </view>
-</scroll-view>
+  
+  <view class="style-filter-wrapper {{showStyleFilter ? 'expanded' : ''}}">
+    <view class="style-filter-content">
+      <view 
+        class="style-tag {{activeTag === item.id ? 'active' : ''}}"
+        wx:for="{{tags}}" 
+        wx:key="id"
+        bindtap="onTagTap"
+        data-id="{{item.id}}"
+      >
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+</view>

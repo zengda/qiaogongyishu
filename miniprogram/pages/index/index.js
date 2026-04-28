@@ -28,7 +28,7 @@ Page({
       
       this.setData({
         banners,
-        categories: [{ id: 0, name: '全部' }, ...categories],
+        categories,
         tags: [{ id: 0, name: '全部' }, ...tags]
       })
       
@@ -92,7 +92,6 @@ Page({
     const categoryId = e.detail
     this.setData({
       activeCategory: categoryId,
-      activeTag: 0,
       showStyleFilter: false
     })
     this.loadProducts()

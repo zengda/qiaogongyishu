@@ -11,6 +11,14 @@ Component({
     showStyleFilter: {
       type: Boolean,
       default: false
+    },
+    tags: {
+      type: Array,
+      default: []
+    },
+    activeTag: {
+      type: Number,
+      default: 0
     }
   },
   
@@ -21,7 +29,13 @@ Component({
     },
     
     onStyleTap() {
+      console.log('styleTap triggered')
       this.triggerEvent('styleTap')
+    },
+    
+    onTagTap(e) {
+      const tagId = e.currentTarget.dataset.id
+      this.triggerEvent('tagChange', tagId)
     }
   }
 })

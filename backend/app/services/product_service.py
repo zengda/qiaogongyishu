@@ -62,7 +62,11 @@ class ProductService:
         db.session.add(product)
         db.session.flush()
         
+        cover_image = data.get('cover_image')
         banner_images = data.get('banner_images', [])
+        
+        if cover_image:
+            banner_images = [cover_image] + banner_images
         
         for i, img in enumerate(banner_images):
             image_url = img.image_url if hasattr(img, 'image_url') else img
@@ -108,9 +112,16 @@ class ProductService:
         if 'is_active' in data:
             product.is_active = data['is_active']
         
-        if 'banner_images' in data:
+        if 'cover_image' in data or 'banner_images' in data:
             ProductImage.query.filter_by(product_id=product_id, image_type='banner').delete()
-            for i, img in enumerate(data['banner_images']):
+            
+            cover_image = data.get('cover_image')
+            banner_images = data.get('banner_images', [])
+            
+            if cover_image:
+                banner_images = [cover_image] + banner_images
+            
+            for i, img in enumerate(banner_images):
                 image_url = img.image_url if hasattr(img, 'image_url') else img
                 if image_url:
                     db.session.add(ProductImage(

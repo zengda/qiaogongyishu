@@ -34,8 +34,8 @@ def get_product_detail(product_id):
 @product_bp.route('/products/<int:product_id>/view', methods=['POST'])
 def record_product_view(product_id):
     """记录产品浏览"""
-    success = ProductService.increment_view_count(product_id)
-    if not success:
+    success_flag = ProductService.increment_view_count(product_id)
+    if not success_flag:
         return error(404, '产品不存在'), 404
     return success(message='记录成功')
 

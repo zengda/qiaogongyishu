@@ -43,6 +43,7 @@ import { categoryApi } from '../../api'
 
 const router = useRouter()
 const categories = ref([])
+const loading = ref(false)
 
 const loadCategories = async () => {
   loading.value = true

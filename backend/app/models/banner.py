@@ -1,5 +1,6 @@
 from app.extensions import db
 from datetime import datetime
+from flask import current_app
 
 class Banner(db.Model):
     __tablename__ = 'banners'
@@ -25,10 +26,17 @@ class Banner(db.Model):
         return self.is_active
     
     def to_dict(self):
+        image_url = self.image_url
+        if image_url and not image_url.startswith('http'):
+            if image_url.startswith('/uploads/'):
+                image_url = current_app.config['LOCAL_BASE_URL'].replace('/uploads', '') + image_url
+            else:
+                image_url = current_app.config['LOCAL_BASE_URL'] + '/' + image_url
+        
         return {
             'id': self.id,
             'title': self.title,
-            'image_url': self.image_url,
+            'image_url': image_url,
             'link_type': self.link_type,
             'link_value': self.link_value,
             'sort_order': self.sort_order,
