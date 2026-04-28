@@ -663,7 +663,7 @@ def update_miniprogram_config():
 @admin_required
 def miniprogram_preview():
     """小程序预览"""
-    import subprocess, os, uuid, json
+    import subprocess, os, uuid
     data = request.get_json(silent=True) or {}
     desc = data.get('desc', '从管理后台预览')
     page_path = data.get('page_path', 'pages/index/index')
@@ -718,7 +718,7 @@ def miniprogram_preview():
 @admin_required
 def miniprogram_upload():
     """小程序上传代码"""
-    import subprocess, os, json
+    import subprocess, os
     data = request.get_json(silent=True) or {}
     version = data.get('version', '').strip()
     desc = data.get('desc', '').strip()
