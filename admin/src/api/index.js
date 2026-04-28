@@ -4,7 +4,10 @@ import store from '../store'
 
 export const authApi = {
   login(data) {
-    return request.post('/admin/auth/login', data)
+    const instance = axios.create({
+      timeout: 10000
+    })
+    return instance.post('/api/v1/admin/auth/login', data)
   }
 }
 

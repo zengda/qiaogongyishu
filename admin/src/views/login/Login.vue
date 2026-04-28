@@ -43,6 +43,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
 import { authApi } from '../../api'
 
 const router = useRouter()
@@ -72,16 +73,26 @@ const handleLogin = async () => {
     await formRef.value.validate()
     loading.value = true
     
-    const result = await authApi.login(form)
+    const response = await authApi.login(form)
+    const res = response.data
+    
+    if (res.code !== 200 || !res.data || !res.data.token) {
+      throw new Error(res.message || '登录失败')
+    }
     
     await store.dispatch('login', {
-      token: result.token,
-      user: result.user
+      token: res.data.token,
+      user: res.data.user
     })
     
-    router.push('/dashboard')
+    window.location.href = '/dashboard'
   } catch (error) {
     console.error('登录失败:', error)
+    if (error.response && error.response.status === 401) {
+      ElMessage.error('用户名或密码错误')
+    } else {
+      ElMessage.error(error.message || '登录失败，请重试')
+    }
   } finally {
     loading.value = false
   }
