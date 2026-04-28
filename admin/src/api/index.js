@@ -126,3 +126,15 @@ export const dashboardApi = {
     return request.get('/admin/dashboard')
   }
 }
+
+export const settingsApi = {
+  get(key) {
+    return request.get(`/admin/settings/${key}`)
+  },
+  getAll() {
+    return request.get('/admin/settings')
+  },
+  update(data) {
+    return request.put('/admin/settings', data)
+  }
+}

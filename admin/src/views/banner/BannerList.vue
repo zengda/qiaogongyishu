@@ -8,7 +8,7 @@
       </el-button>
     </div>
     
-    <el-table :data="banners" border>
+    <el-table :data="banners" border v-loading="loading">
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column label="图片" width="150">
         <template #default="scope">
@@ -45,6 +45,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { bannerApi } from '../../api'
 
 const router = useRouter()
+const loading = ref(false)
 const banners = ref([])
 
 const getLinkTypeText = (linkType) => {
@@ -57,6 +58,7 @@ const getLinkTypeText = (linkType) => {
 }
 
 const loadBanners = async () => {
+  loading.value = true
   try {
     const result = await bannerApi.list()
     banners.value = result || []
@@ -64,6 +66,8 @@ const loadBanners = async () => {
     console.error('加载Banner失败:', error)
     const errorMsg = error?.response?.data?.message || error?.message || '加载Banner失败'
     ElMessage.error(errorMsg)
+  } finally {
+    loading.value = false
   }
 }
 

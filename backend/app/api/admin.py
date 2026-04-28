@@ -22,6 +22,7 @@ def get_dashboard():
     try:
         from app.models.product import Product
         from app.models.banner import Banner
+        from app.models.customer import Customer
         
         today = datetime.now().date()
         today_start = datetime.combine(today, datetime.min.time())

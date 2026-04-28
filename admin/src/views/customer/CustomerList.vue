@@ -71,6 +71,7 @@ import { ElMessageBox, ElMessage } from 'element-plus'
 import { customerApi } from '../../api'
 
 const router = useRouter()
+const loading = ref(false)
 const customers = ref([])
 const pagination = reactive({
   page: 1,
@@ -94,6 +95,7 @@ const getStatusText = (status) => statusMap[status]?.text || status
 const getStatusType = (status) => statusMap[status]?.type || 'default'
 
 const loadCustomers = async () => {
+  loading.value = true
   try {
     const params = {
       page: pagination.page,
@@ -108,6 +110,8 @@ const loadCustomers = async () => {
   } catch (error) {
     console.error('加载客户列表失败:', error)
     ElMessage.error('加载客户列表失败')
+  } finally {
+    loading.value = false
   }
 }
 

@@ -4,7 +4,7 @@
       <h1>系统设置</h1>
     </div>
     
-    <el-form :model="form" class="settings-form">
+    <el-form :model="form" class="settings-form" v-loading="loading">
       <el-form-item label="客服二维码">
         <div class="upload-area" @click="triggerUpload">
           <img v-if="form.customer_service_qrcode" :src="form.customer_service_qrcode" class="qrcode-image" />
@@ -16,7 +16,7 @@
       </el-form-item>
       
       <el-form-item>
-        <el-button type="primary" @click="handleSubmit">保存设置</el-button>
+        <el-button type="primary" @click="handleSubmit" :loading="submitting">保存设置</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -27,23 +27,27 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { Upload } from '@element-plus/icons-vue'
-import { uploadApi } from '../../api'
+import { ElMessage } from 'element-plus'
+import { uploadApi, settingsApi } from '../../api'
 
 const fileInput = ref(null)
+const loading = ref(false)
+const submitting = ref(false)
 
 const form = reactive({
   customer_service_qrcode: ''
 })
 
 const loadSettings = async () => {
+  loading.value = true
   try {
-    const result = await fetch('/api/v1/settings/customer_service_qrcode')
-    const data = await result.json()
-    if (data.code === 200) {
-      form.customer_service_qrcode = data.data.value || ''
-    }
+    const result = await settingsApi.get('customer_service_qrcode')
+    form.customer_service_qrcode = result?.value || ''
   } catch (error) {
     console.error('加载设置失败:', error)
+    ElMessage.error('加载设置失败')
+  } finally {
+    loading.value = false
   }
 }
 
@@ -59,24 +63,23 @@ const handleFileChange = async (e) => {
     const result = await uploadApi.upload(file)
     form.customer_service_qrcode = result.url
     e.target.value = ''
+    ElMessage.success('上传成功')
   } catch (error) {
     console.error('上传失败:', error)
+    ElMessage.error('上传失败')
   }
 }
 
 const handleSubmit = async () => {
+  submitting.value = true
   try {
-    await fetch('/api/v1/settings', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('admin_token')}`
-      },
-      body: JSON.stringify({ customer_service_qrcode: form.customer_service_qrcode })
-    })
-    alert('保存成功')
+    await settingsApi.update({ customer_service_qrcode: form.customer_service_qrcode })
+    ElMessage.success('保存成功')
   } catch (error) {
     console.error('保存失败:', error)
+    ElMessage.error('保存失败')
+  } finally {
+    submitting.value = false
   }
 }
 

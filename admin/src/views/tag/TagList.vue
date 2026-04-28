@@ -8,7 +8,7 @@
       </el-button>
     </div>
     
-    <el-table :data="tags" border>
+    <el-table :data="tags" border v-loading="loading">
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column prop="name" label="标签名称" />
       <el-table-column prop="sort_order" label="排序" />
@@ -42,14 +42,18 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { tagApi } from '../../api'
 
 const router = useRouter()
+const loading = ref(false)
 const tags = ref([])
 
 const loadTags = async () => {
+  loading.value = true
   try {
     tags.value = await tagApi.list()
   } catch (error) {
     console.error('加载标签失败:', error)
     ElMessage.error('加载标签失败')
+  } finally {
+    loading.value = false
   }
 }
 

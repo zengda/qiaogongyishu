@@ -45,11 +45,14 @@ const router = useRouter()
 const categories = ref([])
 
 const loadCategories = async () => {
+  loading.value = true
   try {
     categories.value = await categoryApi.list()
   } catch (error) {
     console.error('加载分类失败:', error)
     ElMessage.error('加载分类失败')
+  } finally {
+    loading.value = false
   }
 }
 

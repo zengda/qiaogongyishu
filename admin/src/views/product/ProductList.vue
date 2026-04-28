@@ -67,6 +67,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { productApi, categoryApi } from '../../api'
 
 const router = useRouter()
+const loading = ref(false)
 const products = ref([])
 const categories = ref([])
 const pagination = reactive({
