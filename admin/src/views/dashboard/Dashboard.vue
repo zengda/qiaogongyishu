@@ -17,61 +17,80 @@
         <div class="stat-icon customer-icon">👥</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.customerCount || 0 }}</div>
-          <div class="stat-label">客户数量</div>
+          <div class="stat-label">客户总量</div>
         </div>
       </div>
       <div class="stat-card">
-        <div class="stat-icon view-icon">👁</div>
+        <div class="stat-icon new-customer-icon">🆕</div>
         <div class="stat-info">
-          <div class="stat-value">{{ stats.viewCount || 0 }}</div>
-          <div class="stat-label">总浏览量</div>
+          <div class="stat-value">{{ stats.customerToday || 0 }}</div>
+          <div class="stat-label">今日新增</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon banner-icon">🎯</div>
         <div class="stat-info">
           <div class="stat-value">{{ stats.bannerCount || 0 }}</div>
-          <div class="stat-label">Banner数量</div>
+          <div class="stat-label">活跃Banner</div>
         </div>
       </div>
     </div>
     
-    <div class="charts-section">
-      <div class="chart-card">
-        <h3>客户趋势</h3>
-        <div ref="customerChart" class="chart-container"></div>
+    <div class="stats-row">
+      <div class="mini-stat-card">
+        <div class="mini-stat-value">{{ stats.customerWeek || 0 }}</div>
+        <div class="mini-stat-label">本周客户</div>
       </div>
-      <div class="chart-card">
-        <h3>产品分类统计</h3>
-        <div ref="categoryChart" class="chart-container"></div>
+      <div class="mini-stat-card">
+        <div class="mini-stat-value">{{ stats.customerMonth || 0 }}</div>
+        <div class="mini-stat-label">本月客户</div>
       </div>
     </div>
     
     <div class="recent-customers">
       <h3>最近客户</h3>
-      <el-table :data="recentCustomers" border>
+      <el-table :data="recentCustomers" border v-if="recentCustomers.length > 0">
         <el-table-column prop="name" label="姓名" />
         <el-table-column prop="phone" label="手机号" />
-        <el-table-column prop="created_at" label="创建时间" />
+        <el-table-column prop="province" label="省份">
+          <template #default="scope">
+            {{ scope.row.province || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="product_title" label="意向产品">
+          <template #default="scope">
+            {{ scope.row.product_title || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="created_at" label="提交时间" />
         <el-table-column prop="status" label="状态">
           <template #default="scope">
             <el-tag :type="getStatusType(scope.row.status)">{{ getStatusText(scope.row.status) }}</el-tag>
           </template>
         </el-table-column>
       </el-table>
+      <div v-else class="empty-state">
+        <p>暂无客户数据</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import * as echarts from 'echarts'
+import { ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import { dashboardApi, customerApi } from '../../api'
 
-const stats = ref({})
+const stats = ref({
+  productCount: 0,
+  customerCount: 0,
+  customerToday: 0,
+  customerWeek: 0,
+  customerMonth: 0,
+  viewCount: 0,
+  bannerCount: 0
+})
 const recentCustomers = ref([])
-const customerChart = ref(null)
-const categoryChart = ref(null)
 
 const statusMap = {
   new: { text: '新客户', type: 'primary' },
@@ -85,63 +104,20 @@ const getStatusType = (status) => statusMap[status]?.type || 'default'
 
 const loadStats = async () => {
   try {
-    stats.value = await dashboardApi.stats()
-    initCharts()
+    const result = await dashboardApi.stats()
+    stats.value = result || {}
   } catch (error) {
     console.error('加载统计数据失败:', error)
+    ElMessage.error('加载统计数据失败')
   }
 }
 
 const loadRecentCustomers = async () => {
   try {
-    const result = await customerApi.list({ page: 1, per_page: 5 })
+    const result = await customerApi.list({ page: 1, per_page: 10 })
     recentCustomers.value = result.items || []
   } catch (error) {
     console.error('加载客户列表失败:', error)
-  }
-}
-
-const initCharts = () => {
-  if (customerChart.value) {
-    const chart = echarts.init(customerChart.value)
-    chart.setOption({
-      xAxis: {
-        type: 'category',
-        data: ['1月', '2月', '3月', '4月', '5月', '6月']
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [{
-        data: [120, 200, 150, 250, 180, 300],
-        type: 'line',
-        smooth: true,
-        areaStyle: {
-          color: 'rgba(26, 109, 92, 0.1)'
-        },
-        lineStyle: {
-          color: '#1A6D5C'
-        }
-      }]
-    })
-  }
-  
-  if (categoryChart.value) {
-    const chart = echarts.init(categoryChart.value)
-    chart.setOption({
-      series: [{
-        type: 'pie',
-        radius: ['40%', '70%'],
-        data: [
-          { value: 30, name: '一层' },
-          { value: 25, name: '二层' },
-          { value: 20, name: '三层' },
-          { value: 15, name: '多层' },
-          { value: 10, name: '双拼' }
-        ],
-        color: ['#1A6D5C', '#2D3748', '#F5A623', '#E53E3E', '#63B3ED']
-      }]
-    })
   }
 }
 
@@ -173,7 +149,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .stat-card {
@@ -197,7 +173,7 @@ onMounted(() => {
   
   &.product-icon { background: rgba(26, 109, 92, 0.1); }
   &.customer-icon { background: rgba(99, 179, 237, 0.1); }
-  &.view-icon { background: rgba(245, 166, 35, 0.1); }
+  &.new-customer-icon { background: rgba(72, 187, 120, 0.1); }
   &.banner-icon { background: rgba(229, 62, 62, 0.1); }
 }
 
@@ -217,29 +193,32 @@ onMounted(() => {
   margin-top: 4px;
 }
 
-.charts-section {
+.stats-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   margin-bottom: 24px;
 }
 
-.chart-card {
+.mini-stat-card {
   background: #fff;
-  padding: 24px;
+  padding: 20px 24px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  
-  h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #333;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.chart-container {
-  height: 300px;
+.mini-stat-value {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+}
+
+.mini-stat-label {
+  font-size: 14px;
+  color: #999;
 }
 
 .recent-customers {
@@ -254,5 +233,11 @@ onMounted(() => {
     margin-bottom: 20px;
     color: #333;
   }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #999;
 }
 </style>

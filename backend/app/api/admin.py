@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+from datetime import datetime, timedelta
 from app.models.category import Category
 from app.models.tag import Tag
 from app.models.banner import Banner
@@ -18,8 +19,42 @@ admin_bp = Blueprint('admin', __name__)
 @admin_required
 def get_dashboard():
     """获取仪表盘数据"""
-    stats = CustomerService.get_statistics()
-    return success(stats)
+    try:
+        from app.models.product import Product
+        from app.models.banner import Banner
+        
+        today = datetime.now().date()
+        today_start = datetime.combine(today, datetime.min.time())
+        today_end = datetime.combine(today, datetime.max.time())
+        
+        week_ago = today - timedelta(days=7)
+        week_start = datetime.combine(week_ago, datetime.min.time())
+        
+        month_ago = today - timedelta(days=30)
+        month_start = datetime.combine(month_ago, datetime.min.time())
+        
+        product_count = Product.query.count()
+        customer_today = Customer.query.filter(Customer.created_at.between(today_start, today_end)).count()
+        customer_week = Customer.query.filter(Customer.created_at >= week_start).count()
+        customer_month = Customer.query.filter(Customer.created_at >= month_start).count()
+        customer_total = Customer.query.count()
+        banner_count = Banner.query.filter_by(is_active=True).count()
+        
+        stats = {
+            'productCount': product_count,
+            'customerCount': customer_total,
+            'customerToday': customer_today,
+            'customerWeek': customer_week,
+            'customerMonth': customer_month,
+            'viewCount': 0,
+            'bannerCount': banner_count
+        }
+        
+        return success(stats)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return error(500, str(e)), 500
 
 @admin_bp.route('/products', methods=['GET'])
 @admin_required
