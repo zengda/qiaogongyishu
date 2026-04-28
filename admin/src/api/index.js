@@ -85,6 +85,9 @@ export const customerApi = {
   get(id) {
     return request.get(`/admin/customers/${id}`)
   },
+  create(data) {
+    return request.post('/admin/customers', data)
+  },
   updateStatus(id, status) {
     return request.patch(`/admin/customers/${id}/status`, { status })
   },

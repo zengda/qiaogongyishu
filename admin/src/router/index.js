@@ -27,6 +27,7 @@ const routes = [
       { path: '/banners/add', name: 'BannerAdd', component: () => import('../views/banner/BannerAdd.vue') },
       { path: '/banners/:id/edit', name: 'BannerEdit', component: () => import('../views/banner/BannerEdit.vue') },
       { path: '/customers', name: 'CustomerList', component: () => import('../views/customer/CustomerList.vue') },
+      { path: '/customers/add', name: 'CustomerAdd', component: () => import('../views/customer/CustomerAdd.vue') },
       { path: '/customers/:id', name: 'CustomerDetail', component: () => import('../views/customer/CustomerDetail.vue') },
       { path: '/settings/storage', name: 'StorageConfig', component: () => import('../views/settings/StorageConfig.vue') },
       { path: '/settings/customer-service', name: 'CustomerService', component: () => import('../views/settings/CustomerService.vue') },

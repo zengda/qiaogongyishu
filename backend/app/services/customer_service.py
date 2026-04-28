@@ -13,7 +13,8 @@ class CustomerService:
         if not CustomerService._validate_phone(phone):
             return None, '手机号码格式不正确'
         
-        if CustomerService._check_rate_limit(phone):
+        source = data.get('source', '小程序')
+        if source != '后台添加' and CustomerService._check_rate_limit(phone):
             return None, '提交过于频繁，请稍后再试'
         
         customer = Customer(
@@ -25,12 +26,13 @@ class CustomerService:
             building_area_budget=data.get('building_area_budget'),
             product_id=data.get('product_id'),
             product_title=data.get('product_title'),
-            source=data.get('source', '小程序')
+            source=source
         )
         db.session.add(customer)
         db.session.commit()
         
-        CustomerService._set_rate_limit(phone)
+        if source != '后台添加':
+            CustomerService._set_rate_limit(phone)
         return customer.to_dict(), None
     
     @staticmethod

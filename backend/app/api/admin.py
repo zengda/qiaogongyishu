@@ -324,6 +324,21 @@ def admin_get_customers():
     
     return success(paginated(items, page, per_page, total))
 
+@admin_bp.route('/customers', methods=['POST'])
+@admin_required
+def admin_create_customer():
+    """创建客户"""
+    data = request.get_json()
+    
+    if not data.get('name') or not data.get('phone'):
+        return error(400, '姓名和手机号为必填项'), 400
+    
+    customer, err = CustomerService.create_customer(data)
+    if err:
+        return error(400, err), 400
+    
+    return success(customer)
+
 @admin_bp.route('/customers/<int:customer_id>', methods=['GET'])
 @admin_required
 def admin_get_customer(customer_id):

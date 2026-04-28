@@ -2,10 +2,16 @@
   <div class="customer-list">
     <div class="page-header">
       <h1>客户管理</h1>
-      <el-button type="primary" @click="handleExport">
-        <el-icon><Download /></el-icon>
-        导出客户
-      </el-button>
+      <div class="header-actions">
+        <el-button type="primary" @click="goToAdd">
+          <el-icon><Plus /></el-icon>
+          添加客户
+        </el-button>
+        <el-button type="success" @click="handleExport">
+          <el-icon><Download /></el-icon>
+          导出客户
+        </el-button>
+      </div>
     </div>
     
     <div class="search-bar">
@@ -60,7 +66,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search, Download } from '@element-plus/icons-vue'
+import { Search, Download, Plus } from '@element-plus/icons-vue'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { customerApi } from '../../api'
 
@@ -120,6 +126,10 @@ const resetSearch = () => {
 const handlePageChange = (page) => {
   pagination.page = page
   loadCustomers()
+}
+
+const goToAdd = () => {
+  router.push('/customers/add')
 }
 
 const viewCustomer = (id) => {
@@ -185,6 +195,11 @@ onMounted(() => {
     font-size: 24px;
     font-weight: 600;
     color: #333;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 12px;
   }
 }
 
