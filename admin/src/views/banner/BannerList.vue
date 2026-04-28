@@ -2,7 +2,7 @@
   <div class="banner-list">
     <div class="page-header">
       <h1>Banner管理</h1>
-      <el-button type="primary" @click="$router.push('/banners/add')">
+      <el-button type="primary" @click="goToAdd">
         <el-icon><Plus /></el-icon>
         添加Banner
       </el-button>
@@ -17,14 +17,14 @@
       </el-table-column>
       <el-table-column prop="link_type" label="链接类型">
         <template #default="scope">
-          <span>{{ scope.row.link_type === 'product' ? '产品' : '外部链接' }}</span>
+          <span>{{ getLinkTypeText(scope.row.link_type) }}</span>
         </template>
       </el-table-column>
       <el-table-column prop="link_value" label="链接值" />
       <el-table-column prop="sort_order" label="排序" />
-      <el-table-column prop="status" label="状态">
+      <el-table-column prop="is_active" label="状态">
         <template #default="scope">
-          <el-switch :value="scope.row.status === 'active'" @change="toggleStatus(scope.row.id, $event)" />
+          <el-switch :model-value="scope.row.is_active" @change="toggleStatus(scope.row.id, $event)" />
         </template>
       </el-table-column>
       <el-table-column label="操作" width="180">
@@ -39,37 +39,69 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Plus } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { bannerApi } from '../../api'
 
+const router = useRouter()
 const banners = ref([])
+
+const getLinkTypeText = (linkType) => {
+  const map = {
+    'none': '无链接',
+    'product': '产品链接',
+    'external': '外部链接'
+  }
+  return map[linkType] || linkType
+}
 
 const loadBanners = async () => {
   try {
-    banners.value = await bannerApi.list()
+    const result = await bannerApi.list()
+    banners.value = result || []
   } catch (error) {
     console.error('加载Banner失败:', error)
+    const errorMsg = error?.response?.data?.message || error?.message || '加载Banner失败'
+    ElMessage.error(errorMsg)
   }
 }
 
+const goToAdd = () => {
+  router.push('/banners/add')
+}
+
 const editBanner = (id) => {
-  window.location.href = `/banners/${id}/edit`
+  router.push(`/banners/${id}/edit`)
 }
 
 const deleteBanner = async (id) => {
   try {
+    await ElMessageBox.confirm('确定要删除该Banner吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
     await bannerApi.delete(id)
+    ElMessage.success('删除成功')
     loadBanners()
   } catch (error) {
-    console.error('删除Banner失败:', error)
+    if (error !== 'cancel') {
+      console.error('删除Banner失败:', error)
+      const errorMsg = error?.response?.data?.message || error?.message || '删除失败'
+      ElMessage.error(errorMsg)
+    }
   }
 }
 
 const toggleStatus = async (id, value) => {
   try {
-    await bannerApi.update(id, { status: value ? 'active' : 'inactive' })
+    await bannerApi.update(id, { is_active: value })
+    ElMessage.success(value ? '已启用' : '已禁用')
+    loadBanners()
   } catch (error) {
     console.error('更新状态失败:', error)
+    ElMessage.error('更新状态失败')
     loadBanners()
   }
 }

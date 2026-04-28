@@ -5,8 +5,8 @@
       <el-button @click="$router.back()">返回</el-button>
     </div>
     
-    <el-form :model="form" ref="formRef" :rules="rules" class="banner-form">
-      <el-form-item label="Banner图片" prop="image_url">
+    <el-form :model="form" class="banner-form">
+      <el-form-item label="Banner图片">
         <div class="upload-area" @click="triggerUpload">
           <img v-if="form.image_url" :src="form.image_url" class="preview-image" />
           <div v-else class="upload-placeholder">
@@ -18,12 +18,13 @@
       
       <el-form-item label="链接类型" prop="link_type">
         <el-radio-group v-model="form.link_type">
+          <el-radio label="none">无链接</el-radio>
           <el-radio label="product">产品链接</el-radio>
           <el-radio label="external">外部链接</el-radio>
         </el-radio-group>
       </el-form-item>
       
-      <el-form-item label="链接值" prop="link_value">
+      <el-form-item label="链接值" v-if="form.link_type !== 'none'">
         <template v-if="form.link_type === 'product'">
           <el-select v-model="form.link_value" placeholder="请选择产品">
             <el-option v-for="product in products" :key="product.id" :label="product.title" :value="product.id.toString()" />
@@ -50,27 +51,23 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Upload } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 import { bannerApi, productApi, uploadApi } from '../../api'
 
 const route = useRoute()
-const formRef = ref(null)
+const router = useRouter()
 const fileInput = ref(null)
 
 const products = ref([])
 
 const form = reactive({
   image_url: '',
-  link_type: 'product',
+  link_type: 'none',
   link_value: '',
   sort_order: 0
 })
-
-const rules = {
-  image_url: [{ required: true, message: '请上传Banner图片', trigger: 'blur' }],
-  link_value: [{ required: true, message: '请填写链接值', trigger: 'blur' }]
-}
 
 const loadBanner = async () => {
   try {
@@ -81,6 +78,7 @@ const loadBanner = async () => {
     form.sort_order = banner.sort_order
   } catch (error) {
     console.error('加载Banner失败:', error)
+    ElMessage.error('加载Banner失败')
   }
 }
 
@@ -111,14 +109,19 @@ const handleFileChange = async (e) => {
 }
 
 const handleSubmit = async () => {
-  if (!formRef.value) return
+  if (!form.image_url) {
+    ElMessage.error('请上传Banner图片')
+    return
+  }
   
   try {
-    await formRef.value.validate()
     await bannerApi.update(route.params.id, form)
-    window.location.href = '/banners'
+    ElMessage.success('保存成功')
+    router.push('/banners')
   } catch (error) {
     console.error('保存失败:', error)
+    const errorMsg = error?.response?.data?.message || error?.message || '保存失败'
+    ElMessage.error(errorMsg)
   }
 }
 
