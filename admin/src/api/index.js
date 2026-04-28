@@ -141,3 +141,18 @@ export const settingsApi = {
     return request.put('/admin/settings', data)
   }
 }
+
+export const miniprogramApi = {
+  getConfig() {
+    return request.get('/admin/miniprogram/config')
+  },
+  saveConfig(data) {
+    return request.put('/admin/miniprogram/config', data)
+  },
+  preview(data) {
+    return request.post('/admin/miniprogram/preview', data)
+  },
+  upload(data) {
+    return request.post('/admin/miniprogram/upload', data)
+  }
+}

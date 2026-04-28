@@ -66,6 +66,7 @@
             </template>
             <el-menu-item index="/settings/storage">{{ sidebarCollapsed ? '' : '存储配置' }}</el-menu-item>
             <el-menu-item index="/settings/customer-service">{{ sidebarCollapsed ? '' : '客服二维码设置' }}</el-menu-item>
+            <el-menu-item index="/settings/miniprogram">{{ sidebarCollapsed ? '' : '小程序配置' }}</el-menu-item>
             <el-menu-item index="/settings/change-password">{{ sidebarCollapsed ? '' : '修改密码' }}</el-menu-item>
           </el-sub-menu>
         </el-menu>

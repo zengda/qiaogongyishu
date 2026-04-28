@@ -613,3 +613,179 @@ def test_oss_connection():
         return error(400, f'网络请求失败: {str(e)}'), 400
     except Exception as e:
         return error(400, f'连接失败: {str(e)}'), 400
+
+
+@admin_bp.route('/miniprogram/config', methods=['GET'])
+@admin_required
+def get_miniprogram_config():
+    """获取小程序配置"""
+    keys = [
+        'miniprogram_appid',
+        'miniprogram_private_key',
+        'miniprogram_project_path',
+        'miniprogram_type',
+        'miniprogram_robot',
+        'miniprogram_latest_version',
+        'miniprogram_latest_desc'
+    ]
+    result = {}
+    for key in keys:
+        setting = SystemSetting.query.filter_by(setting_key=key).first()
+        result[key.replace('miniprogram_', '')] = setting.setting_value if setting else ''
+    return success(result)
+
+
+@admin_bp.route('/miniprogram/config', methods=['PUT'])
+@admin_required
+def update_miniprogram_config():
+    """保存小程序配置"""
+    data = request.get_json(silent=True) or {}
+    mappings = {
+        'appid': 'miniprogram_appid',
+        'private_key': 'miniprogram_private_key',
+        'project_path': 'miniprogram_project_path',
+        'type': 'miniprogram_type',
+        'robot': 'miniprogram_robot'
+    }
+    for field, setting_key in mappings.items():
+        value = data.get(field)
+        if value is not None:
+            setting = SystemSetting.query.filter_by(setting_key=setting_key).first()
+            if setting:
+                setting.setting_value = str(value)
+            else:
+                db.session.add(SystemSetting(setting_key=setting_key, setting_value=str(value)))
+    db.session.commit()
+    return success(message='小程序配置保存成功')
+
+
+@admin_bp.route('/miniprogram/preview', methods=['POST'])
+@admin_required
+def miniprogram_preview():
+    """小程序预览"""
+    import subprocess, os, uuid, json
+    data = request.get_json(silent=True) or {}
+    desc = data.get('desc', '从管理后台预览')
+    page_path = data.get('page_path', 'pages/index/index')
+    search_query = data.get('search_query', '')
+
+    config = _get_miniprogram_config_dict()
+    if not config.get('appid'):
+        return error(400, '请先配置小程序 AppID'), 400
+    if not config.get('private_key'):
+        return error(400, '请先配置上传密钥'), 400
+    if not config.get('project_path'):
+        return error(400, '请先配置项目路径'), 400
+
+    private_key_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'private.key')
+    with open(private_key_path, 'w') as f:
+        f.write(config['private_key'])
+
+    qrcode_filename = f'preview-{uuid.uuid4().hex[:8]}.jpg'
+    qrcode_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'uploads', qrcode_filename)
+    robot = config.get('robot', '1')
+
+    try:
+        cmd = [
+            'node', os.path.join(os.path.dirname(__file__), '..', 'scripts', 'miniprogram-ci.js'),
+            'preview',
+            '--appid', config['appid'],
+            '--project-path', config['project_path'],
+            '--private-key-path', private_key_path,
+            '--desc', desc,
+            '--page-path', page_path,
+            '--search-query', search_query,
+            '--robot', str(robot),
+            '--qrcode-output', qrcode_path,
+            '--qrcode-format', 'image'
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=120, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        if result.returncode != 0:
+            return error(500, f'预览失败: {result.stderr.strip()}'), 500
+
+        qrcode_url = f'/uploads/{qrcode_filename}'
+        return success({'qrcode_url': qrcode_url})
+    except subprocess.TimeoutExpired:
+        return error(500, '预览超时，请重试'), 500
+    except FileNotFoundError:
+        return error(500, '未找到 miniprogram-ci 运行环境，请确保 Node.js 和 miniprogram-ci 已安装'), 500
+    finally:
+        if os.path.exists(private_key_path):
+            os.remove(private_key_path)
+
+
+@admin_bp.route('/miniprogram/upload', methods=['POST'])
+@admin_required
+def miniprogram_upload():
+    """小程序上传代码"""
+    import subprocess, os, json
+    data = request.get_json(silent=True) or {}
+    version = data.get('version', '').strip()
+    desc = data.get('desc', '').strip()
+
+    if not version:
+        return error(400, '请输入版本号'), 400
+
+    config = _get_miniprogram_config_dict()
+    if not config.get('appid'):
+        return error(400, '请先配置小程序 AppID'), 400
+    if not config.get('private_key'):
+        return error(400, '请先配置上传密钥'), 400
+    if not config.get('project_path'):
+        return error(400, '请先配置项目路径'), 400
+
+    private_key_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'private.key')
+    with open(private_key_path, 'w') as f:
+        f.write(config['private_key'])
+
+    robot = config.get('robot', '1')
+
+    try:
+        cmd = [
+            'node', os.path.join(os.path.dirname(__file__), '..', 'scripts', 'miniprogram-ci.js'),
+            'upload',
+            '--appid', config['appid'],
+            '--project-path', config['project_path'],
+            '--private-key-path', private_key_path,
+            '--version', version,
+            '--desc', desc,
+            '--robot', str(robot)
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180, cwd=os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        if result.returncode != 0:
+            return error(500, f'上传失败: {result.stderr.strip()}'), 500
+
+        SystemSetting.query.filter_by(setting_key='miniprogram_latest_version').update(
+            {'setting_value': version}
+        )
+        if desc:
+            existing_desc = SystemSetting.query.filter_by(setting_key='miniprogram_latest_desc').first()
+            if existing_desc:
+                existing_desc.setting_value = desc
+            else:
+                db.session.add(SystemSetting(setting_key='miniprogram_latest_desc', setting_value=desc))
+        db.session.commit()
+
+        return success({
+            'message': '上传成功',
+            'version': version,
+            'desc': desc
+        })
+    except subprocess.TimeoutExpired:
+        return error(500, '上传超时，请重试'), 500
+    except FileNotFoundError:
+        return error(500, '未找到 miniprogram-ci 运行环境，请确保 Node.js 和 miniprogram-ci 已安装'), 500
+    finally:
+        if os.path.exists(private_key_path):
+            os.remove(private_key_path)
+
+
+def _get_miniprogram_config_dict():
+    """从数据库读取小程序配置"""
+    keys = ['miniprogram_appid', 'miniprogram_private_key', 'miniprogram_project_path',
+            'miniprogram_type', 'miniprogram_robot']
+    config = {}
+    for key in keys:
+        setting = SystemSetting.query.filter_by(setting_key=key).first()
+        config[key.replace('miniprogram_', '')] = setting.setting_value if setting else ''
+    return config
