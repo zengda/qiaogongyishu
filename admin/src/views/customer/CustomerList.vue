@@ -160,6 +160,7 @@ const deleteCustomer = async (id) => {
 
 const handleExport = async () => {
   try {
+    ElMessage.info('正在导出，请稍候...')
     const response = await customerApi.export()
     const blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
     const url = window.URL.createObjectURL(blob)
@@ -173,7 +174,8 @@ const handleExport = async () => {
     ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
-    ElMessage.error('导出失败')
+    const errorMsg = error?.response?.data?.message || error?.message || '导出失败'
+    ElMessage.error(errorMsg)
   }
 }
 

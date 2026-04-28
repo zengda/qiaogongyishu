@@ -1,4 +1,6 @@
 import request from '../utils/request'
+import axios from 'axios'
+import store from '../store'
 
 export const authApi = {
   login(data) {
@@ -97,8 +99,15 @@ export const customerApi = {
   delete(id) {
     return request.delete(`/admin/customers/${id}`)
   },
-  export() {
-    return request.get('/admin/customers/export', { responseType: 'blob' })
+  async export() {
+    const token = store.getters.token
+    const response = await axios.get('/api/v1/admin/customers/export', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      responseType: 'blob'
+    })
+    return response.data
   }
 }
 
