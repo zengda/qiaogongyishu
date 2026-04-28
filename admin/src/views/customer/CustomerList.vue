@@ -16,10 +16,10 @@
       </el-input>
       <el-select v-model="searchForm.status" placeholder="选择状态" class="search-select">
         <el-option label="全部" :value="''" />
-        <el-option label="新客户" :value="new" />
-        <el-option label="已联系" :value="contacted" />
-        <el-option label="跟进中" :value="followed" />
-        <el-option label="已成交" :value="closed" />
+        <el-option label="新客户" :value="'new'" />
+        <el-option label="已联系" :value="'contacted'" />
+        <el-option label="跟进中" :value="'followed'" />
+        <el-option label="已成交" :value="'closed'" />
       </el-select>
       <el-button @click="resetSearch">重置</el-button>
     </div>
@@ -59,9 +59,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { Search, Download } from '@element-plus/icons-vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
 import { customerApi } from '../../api'
 
+const router = useRouter()
 const customers = ref([])
 const pagination = reactive({
   page: 1,
@@ -98,6 +101,7 @@ const loadCustomers = async () => {
     pagination.page = result.page
   } catch (error) {
     console.error('加载客户列表失败:', error)
+    ElMessage.error('加载客户列表失败')
   }
 }
 
@@ -119,15 +123,28 @@ const handlePageChange = (page) => {
 }
 
 const viewCustomer = (id) => {
-  window.location.href = `/customers/${id}`
+  router.push(`/customers/${id}`)
 }
 
 const deleteCustomer = async (id) => {
   try {
+    await ElMessageBox.confirm(
+      '确定要删除该客户吗？',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    )
     await customerApi.delete(id)
+    ElMessage.success('删除成功')
     loadCustomers()
   } catch (error) {
-    console.error('删除客户失败:', error)
+    if (error !== 'cancel') {
+      console.error('删除客户失败:', error)
+      ElMessage.error('删除失败')
+    }
   }
 }
 
@@ -143,8 +160,10 @@ const handleExport = async () => {
     link.click()
     document.body.removeChild(link)
     window.URL.revokeObjectURL(url)
+    ElMessage.success('导出成功')
   } catch (error) {
     console.error('导出失败:', error)
+    ElMessage.error('导出失败')
   }
 }
 

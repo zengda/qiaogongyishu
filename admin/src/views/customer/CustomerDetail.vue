@@ -39,13 +39,17 @@
         <el-tag :type="getStatusType(customer.status)">{{ getStatusText(customer.status) }}</el-tag>
       </div>
       <div class="detail-row">
+        <span class="label">备注</span>
+        <span class="value">{{ customer.remark || '-' }}</span>
+      </div>
+      <div class="detail-row">
         <span class="label">创建时间</span>
         <span class="value">{{ customer.created_at }}</span>
       </div>
     </div>
     
     <div class="action-section">
-      <el-select v-model="status" placeholder="选择状态">
+      <el-select v-model="status" placeholder="选择状态" class="status-select">
         <el-option label="新客户" value="new" />
         <el-option label="已联系" value="contacted" />
         <el-option label="跟进中" value="followed" />
@@ -59,6 +63,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { customerApi } from '../../api'
 
 const route = useRoute()
@@ -81,15 +86,23 @@ const loadCustomer = async () => {
     status.value = customer.value.status
   } catch (error) {
     console.error('加载客户详情失败:', error)
+    ElMessage.error('加载客户详情失败')
   }
 }
 
 const handleUpdateStatus = async () => {
+  if (!status.value) {
+    ElMessage.warning('请选择状态')
+    return
+  }
+  
   try {
     await customerApi.updateStatus(route.params.id, status.value)
     customer.value.status = status.value
+    ElMessage.success('状态更新成功')
   } catch (error) {
     console.error('更新状态失败:', error)
+    ElMessage.error('更新状态失败')
   }
 }
 
@@ -148,7 +161,7 @@ onMounted(() => {
   display: flex;
   gap: 16px;
   
-  .el-select {
+  .status-select {
     width: 200px;
   }
 }
