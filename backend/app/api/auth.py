@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 import jwt
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash
@@ -53,7 +53,7 @@ def admin_login():
         'username': admin.username,
         'role': admin.role,
         'exp': datetime.now() + timedelta(hours=24)
-    }, 'your-jwt-secret-key-here', algorithm='HS256')
+    }, current_app.config['JWT_SECRET_KEY'], algorithm='HS256')
     
     return success({
         'token': token,

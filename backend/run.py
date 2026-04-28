@@ -5,7 +5,14 @@ from app.extensions import db
 from app.models import init_data
 
 app = create_app(os.getenv('FLASK_ENV', 'default'))
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+
+allowed_origins = [
+    'http://localhost:3000',
+    'http://localhost:5001',
+    'https://qgys.rongyun.online',
+    'http://qgys.rongyun.online',
+]
+CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
 @app.cli.command('init-db')
 def init_db():

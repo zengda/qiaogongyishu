@@ -15,6 +15,8 @@ class Config:
     REDIS_PORT = int(os.getenv('REDIS_PORT', 6379))
     REDIS_DB = int(os.getenv('REDIS_DB', 0))
     
+    PRODUCTION_DOMAIN = os.getenv('PRODUCTION_DOMAIN', 'qgys.rongyun.online')
+    
     STORAGE_TYPE = os.getenv('STORAGE_TYPE', 'local')
     LOCAL_UPLOAD_PATH = os.getenv('LOCAL_UPLOAD_PATH', '/uploads')
     LOCAL_BASE_URL = os.getenv('LOCAL_BASE_URL', 'http://localhost:5001/uploads')

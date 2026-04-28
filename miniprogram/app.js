@@ -1,6 +1,9 @@
+const config = require('./utils/config')
+
 App({
   onLaunch() {
     console.log('巧工艺墅小程序启动')
+    console.log('API Base URL:', config.apiBaseUrl)
   },
   
   onShow() {
@@ -13,6 +16,6 @@ App({
   
   globalData: {
     userInfo: null,
-    apiBaseUrl: 'http://localhost:5001/api/v1'
+    apiBaseUrl: config.apiBaseUrl
   }
 })

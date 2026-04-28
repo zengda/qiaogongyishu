@@ -1,5 +1,18 @@
+const DEV_API_BASE_URL = 'http://localhost:5001/api/v1'
+const PROD_API_BASE_URL = 'https://qgys.rongyun.online/api/v1'
+
+function getApiBaseUrl() {
+  try {
+    const accountInfo = wx.getAccountInfoSync()
+    if (accountInfo.miniProgram.envVersion === 'release') {
+      return PROD_API_BASE_URL
+    }
+  } catch (e) {}
+  return DEV_API_BASE_URL
+}
+
 module.exports = {
-  apiBaseUrl: 'http://localhost:5001/api/v1',
+  apiBaseUrl: getApiBaseUrl(),
   
   categoryNames: ['一层', '二层', '三层', '多层', '双拼'],
   
