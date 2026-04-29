@@ -32,9 +32,8 @@ class ProductService:
         products = []
         for item in items:
             product_dict = item.to_dict()
-            banner_img = next((img for img in item.images if img.image_type == 'banner'), None)
-            product_dict['cover_image'] = banner_img.image_url if banner_img else None
-            product_dict['tags'] = [pt.tag.name for pt in item.tags]
+            tags = [pt.tag.name for pt in item.tags]
+            product_dict['tags'] = tags
             products.append(product_dict)
         
         return products, total, page, per_page

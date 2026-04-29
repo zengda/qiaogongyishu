@@ -13,7 +13,7 @@
     <text class="cancel-btn" bindtap="goBack">取消</text>
   </view>
   
-  <view class="history-section" wx:if="{{historyList.length > 0}}">
+  <view class="history-section" wx:if="{{historyList.length > 0 && !showResult}}">
     <view class="section-header">
       <text class="section-title">搜索历史</text>
       <text class="clear-btn" bindtap="clearHistory">清空</text>
@@ -24,11 +24,12 @@
         wx:for="{{historyList}}" 
         wx:key="*this" 
         bindtap="onHistoryTap"
+        data-keyword="{{item}}"
       >{{item}}</text>
     </view>
   </view>
   
-  <view class="hot-section">
+  <view class="hot-section" wx:if="{{!showResult}}">
     <view class="section-header">
       <text class="section-title">热门搜索</text>
     </view>
@@ -38,11 +39,16 @@
         wx:for="{{hotList}}" 
         wx:key="*this" 
         bindtap="onHotTap"
+        data-keyword="{{item}}"
       >{{item}}</text>
     </view>
   </view>
   
-  <view class="result-section" wx:if="{{showResult}}">
+  <view class="loading-center" wx:if="{{searchLoading}}">
+    <text class="loading-text">搜索中...</text>
+  </view>
+
+  <view class="result-section" wx:if="{{showResult && !searchLoading}}">
     <view class="result-header">
       <text class="result-count">找到 {{total}} 个结果</text>
     </view>
@@ -54,7 +60,10 @@
         bindtap="onProductClick" 
         data-id="{{item.id}}"
       >
-        <image class="product-image" src="{{item.cover_image}}" mode="aspectFill" lazy-load />
+        <image wx:if="{{item.cover_image}}" class="product-image" src="{{item.cover_image}}" mode="aspectFill" lazy-load />
+        <view wx:else class="product-image-placeholder">
+          <text class="placeholder-icon">🏠</text>
+        </view>
         <view class="product-info">
           <text class="product-title">{{item.title}}</text>
           <view class="product-meta">
@@ -62,6 +71,14 @@
           </view>
         </view>
       </view>
+    </view>
+    
+    <view class="load-more" wx:if="{{loadingMore}}">
+      <text>加载中...</text>
+    </view>
+    
+    <view class="no-more" wx:if="{{!loadingMore && !hasMore && products.length > 0}}">
+      <text>没有更多了</text>
     </view>
     
     <view class="empty-state" wx:if="{{products.length === 0}}">

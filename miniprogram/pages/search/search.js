@@ -7,8 +7,16 @@ Page({
     hotList: ['别墅设计', '三层别墅', '新中式', '欧式风格', '农村自建房'],
     products: [],
     total: 0,
-    showResult: false
+    page: 1,
+    perPage: 20,
+    hasMore: false,
+    showResult: false,
+    searchLoading: false,
+    loadingMore: false
   },
+
+  _lastKeyword: '',
+  _searchLock: false,
 
   onLoad() {
     this.loadHistory()
@@ -35,34 +43,79 @@ Page({
   async onSearch() {
     const keyword = this.data.keyword.trim()
     if (!keyword) return
-    
+    if (this._searchLock) return
+    if (keyword === this._lastKeyword) return
+
+    this._lastKeyword = keyword
+    this._searchLock = true
     this.saveHistory(keyword)
-    await this.searchProducts(keyword)
+
+    this.setData({
+      searchLoading: true,
+      showResult: true,
+      products: [],
+      page: 1,
+      hasMore: false
+    })
+
+    try {
+      const result = await get('/search', { keyword, page: 1, per_page: this.data.perPage })
+      this.setData({
+        products: result.items || [],
+        total: result.total,
+        page: result.page,
+        hasMore: result.page < result.pages,
+        searchLoading: false
+      })
+    } catch (err) {
+      console.error('搜索失败:', err)
+      this.setData({
+        searchLoading: false,
+        showResult: false
+      })
+      wx.showToast({ title: '搜索失败，请重试', icon: 'none' })
+    } finally {
+      this._searchLock = false
+    }
   },
 
   onHistoryTap(e) {
-    const keyword = e.currentTarget.textContent
+    const keyword = e.currentTarget.dataset.keyword
+    if (!keyword) return
     this.setData({ keyword })
     this.onSearch()
   },
 
   onHotTap(e) {
-    const keyword = e.currentTarget.textContent
+    const keyword = e.currentTarget.dataset.keyword
+    if (!keyword) return
     this.setData({ keyword })
     this.onSearch()
   },
 
-  async searchProducts(keyword) {
+  async onReachBottom() {
+    if (this.data.loadingMore) return
+    if (!this.data.hasMore) return
+    if (this.data.searchLoading) return
+
+    this.setData({ loadingMore: true })
+
     try {
-      const result = await get('/search', { keyword, page: 1, per_page: 20 })
+      const nextPage = this.data.page + 1
+      const result = await get('/search', {
+        keyword: this._lastKeyword,
+        page: nextPage,
+        per_page: this.data.perPage
+      })
       this.setData({
-        products: result.items,
-        total: result.total,
-        showResult: true
+        products: [...this.data.products, ...result.items],
+        page: result.page,
+        hasMore: result.page < result.pages,
+        loadingMore: false
       })
     } catch (err) {
-      console.error('搜索失败:', err)
-      this.setData({ products: [], total: 0, showResult: true })
+      console.error('加载更多失败:', err)
+      this.setData({ loadingMore: false })
     }
   },
 

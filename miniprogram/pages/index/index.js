@@ -11,7 +11,8 @@ Page({
     showStyleFilter: false,
     page: 1,
     hasMore: true,
-    loading: false
+    loading: false,
+    initialLoading: true
   },
 
   async onLoad() {
@@ -32,19 +33,24 @@ Page({
         banners,
         categories,
         tags: [{ id: 0, name: '全部' }, ...tags],
-        activeCategory
+        activeCategory,
+        initialLoading: false
       })
       
       await this.loadProducts()
     } catch (err) {
       console.error('加载数据失败:', err)
+      this.setData({ initialLoading: false })
+      wx.showToast({ title: '加载失败，请下拉刷新', icon: 'none' })
     }
   },
 
   async loadProducts(isLoadMore = false) {
-    if (this.data.loading) return
+    if (this.data.loading && isLoadMore) return
     
-    this.setData({ loading: true })
+    if (isLoadMore) {
+      this.setData({ loading: true })
+    }
     
     try {
       const params = {
@@ -72,7 +78,9 @@ Page({
       })
     } catch (err) {
       console.error('加载产品失败:', err)
-      this.setData({ loading: false })
+      if (isLoadMore) {
+        this.setData({ loading: false })
+      }
     }
   },
 

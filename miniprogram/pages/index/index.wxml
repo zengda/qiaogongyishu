@@ -1,4 +1,24 @@
 <view class="container">
+  <view class="skeleton-wrap" wx:if="{{initialLoading}}">
+    <view class="skeleton skeleton-banner"></view>
+    <view class="skeleton skeleton-search"></view>
+    <view class="skeleton-nav">
+      <view class="skeleton skeleton-nav-item"></view>
+      <view class="skeleton skeleton-nav-item"></view>
+      <view class="skeleton skeleton-nav-item"></view>
+      <view class="skeleton skeleton-nav-item"></view>
+      <view class="skeleton skeleton-nav-item"></view>
+    </view>
+    <view class="skeleton-product-list">
+      <view class="skeleton skeleton-card" wx:for="{{4}}" wx:key="*this">
+        <view class="skeleton skeleton-img"></view>
+        <view class="skeleton skeleton-text"></view>
+        <view class="skeleton skeleton-text-short"></view>
+      </view>
+    </view>
+  </view>
+
+  <block wx:else>
   <banner-component banners="{{banners}}" bind:click="onBannerClick"></banner-component>
   
   <view class="search-bar" bindtap="onSearchClick">
@@ -49,4 +69,5 @@
   <view class="no-more" wx:if="{{!loading && !hasMore}}">
     <text>没有更多了</text>
   </view>
+  </block>
 </view>
