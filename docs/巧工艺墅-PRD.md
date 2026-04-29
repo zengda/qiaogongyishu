@@ -36,7 +36,7 @@
 | 层级 | 技术选型 | 版本要求 |
 |------|---------|---------|
 | 小程序前端 | 微信小程序原生开发（WXML + WXSS + JS） | 基础库 >= 2.25.0 |
-| 后端框架 | Python + Flask | Python 3.12+, Flask 3.x |
+| 后端框架 | Python + Flask | Python 3.10+, Flask 2.3.x |
 | 数据库 | MySQL | 8.0 |
 | 缓存 | Redis | 7.0+ |
 | 图片/文件存储 | 本地存储 + 阿里云 OSS（管理后台可切换） | - |
@@ -1762,7 +1762,7 @@ class UploadService:
 
 ```
 Trae IDE → 左下角 Python 版本 → 选择/创建虚拟环境
-推荐：Python 3.12 虚拟环境（venv）
+推荐：Python 3.10 虚拟环境（venv）
 ```
 
 创建虚拟环境命令：
