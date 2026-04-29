@@ -25,8 +25,8 @@
       <el-table-column prop="id" label="ID" width="60" />
       <el-table-column prop="title" label="产品名称" />
       <el-table-column prop="model_number" label="型号" />
-      <el-table-column prop="floor_area" label="建筑面积" />
-      <el-table-column prop="building_area" label="占地面积" />
+      <el-table-column prop="floor_area" label="占地面积" />
+      <el-table-column prop="building_area" label="建筑面积" />
       <el-table-column prop="category_name" label="分类" />
       <el-table-column prop="view_count" label="浏览量" />
       <el-table-column prop="is_active" label="状态">
@@ -67,7 +67,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { productApi, categoryApi } from '../../api'
 
 const router = useRouter()
-const loading = ref(false)
 const products = ref([])
 const categories = ref([])
 const pagination = reactive({

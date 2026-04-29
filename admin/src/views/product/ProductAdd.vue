@@ -26,12 +26,12 @@
         </el-select>
       </el-form-item>
       
-      <el-form-item label="建筑面积">
-        <el-input v-model="form.floor_area" placeholder="请输入建筑面积（如：200㎡）" />
+      <el-form-item label="占地面积">
+        <el-input v-model="form.floor_area" placeholder="请输入占地面积（如：150㎡）" />
       </el-form-item>
       
-      <el-form-item label="占地面积">
-        <el-input v-model="form.building_area" placeholder="请输入占地面积（如：150㎡）" />
+      <el-form-item label="建筑面积">
+        <el-input v-model="form.building_area" placeholder="请输入建筑面积（如：200㎡）" />
       </el-form-item>
       
       <el-form-item label="户型">
@@ -77,7 +77,7 @@
       </el-form-item>
     </el-form>
     
-    <input ref="fileInput" type="file" accept="image/*" class="hidden-input" @change="handleFileChange" />
+    <input ref="fileInput" type="file" accept="image/*" multiple class="hidden-input" @change="handleFileChange" />
   </div>
 </template>
 
@@ -117,7 +117,7 @@ const rules = {
   title: [{ required: true, message: '请输入产品名称', trigger: 'blur' }],
   model_number: [{ required: true, message: '请输入产品型号', trigger: 'blur' }],
   category_id: [{ required: true, message: '请选择分类', trigger: 'blur' }],
-  cover_image: [{ required: true, message: '请上传封面图片', trigger: 'blur' }]
+  cover_image: [{ required: true, message: '请上传封面图片', trigger: 'change' }]
 }
 
 const initEditor = () => {
@@ -130,7 +130,7 @@ const initEditor = () => {
     form.detail = html
   }
   
-  editor.config.customUpload = async (resultFiles, insertImgFn) => {
+  editor.config.customUploadImg = async (resultFiles, insertImgFn) => {
     for (const file of resultFiles) {
       try {
         const result = await uploadApi.upload(file)
@@ -146,11 +146,21 @@ const initEditor = () => {
 }
 
 const loadCategories = async () => {
-  categories.value = await categoryApi.list()
+  try {
+    categories.value = await categoryApi.list()
+  } catch (error) {
+    console.error('加载分类失败:', error)
+    ElMessage.error('加载分类失败')
+  }
 }
 
 const loadTags = async () => {
-  tags.value = await tagApi.list()
+  try {
+    tags.value = await tagApi.list()
+  } catch (error) {
+    console.error('加载标签失败:', error)
+    ElMessage.error('加载标签失败')
+  }
 }
 
 const triggerUpload = (type) => {
@@ -159,16 +169,18 @@ const triggerUpload = (type) => {
 }
 
 const handleFileChange = async (e) => {
-  const file = e.target.files?.[0]
-  if (!file) return
+  const files = e.target.files
+  if (!files || files.length === 0) return
   
   try {
-    const result = await uploadApi.upload(file)
-    
     if (uploadType.value === 'cover') {
+      const result = await uploadApi.upload(files[0])
       form.cover_image = result.url
     } else if (uploadType.value === 'banner') {
-      form.banner_images.push(result.url)
+      for (const file of files) {
+        const result = await uploadApi.upload(file)
+        form.banner_images.push(result.url)
+      }
     }
     
     e.target.value = ''
@@ -207,6 +219,7 @@ const handleSubmit = async () => {
     router.push('/products')
   } catch (error) {
     console.error('保存失败:', error)
+    ElMessage.error(error?.message || error?.response?.data?.message || '保存失败，请重试')
   } finally {
     submitting.value = false
   }

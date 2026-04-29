@@ -99,6 +99,12 @@
   border-radius: 12rpx;
 }
 
+.detail-rich-text {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.8;
+}
+
 .bottom-bar {
   position: fixed;
   bottom: 0;

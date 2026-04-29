@@ -21,11 +21,11 @@
   
   <view class="product-params">
     <view class="param-item" wx:if="{{product.floor_area}}">
-      <text class="param-label">建筑面积</text>
+      <text class="param-label">占地面积</text>
       <text class="param-value">{{product.floor_area}}</text>
     </view>
     <view class="param-item" wx:if="{{product.building_area}}">
-      <text class="param-label">占地面积</text>
+      <text class="param-label">建筑面积</text>
       <text class="param-value">{{product.building_area}}</text>
     </view>
     <view class="param-item" wx:if="{{product.rooms}}">
@@ -42,7 +42,8 @@
   
   <view class="detail-section">
     <text class="section-title">图纸详情</text>
-    <view class="detail-images">
+    <rich-text nodes="{{product.description}}" class="detail-rich-text" wx:if="{{product.description}}" />
+    <view class="detail-images" wx:if="{{product.detail_images && product.detail_images.length > 0}}">
       <image 
         class="detail-image" 
         wx:for="{{product.detail_images}}" 
