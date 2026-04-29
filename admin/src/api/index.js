@@ -154,3 +154,18 @@ export const miniprogramApi = {
     return request.post('/admin/miniprogram/upload', data)
   }
 }
+
+export const storageApi = {
+  getConfig() {
+    return request.get('/admin/storage/config')
+  },
+  saveConfig(data) {
+    return request.put('/admin/storage/config', data)
+  },
+  testOss(data) {
+    return request.post('/admin/storage/test-oss', data)
+  },
+  migrateToOss() {
+    return request.post('/admin/storage/migrate-to-oss')
+  }
+}

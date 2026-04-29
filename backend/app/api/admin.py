@@ -510,32 +510,108 @@ def admin_update_storage_config():
     """更新存储配置"""
     data = request.get_json(silent=True) or {}
     
+    oss_config = data.get('oss_config', {})
+    storage_type = data.get('storage_type', oss_config.get('storage_type', 'local'))
+    
     active_config = StorageConfig.query.filter_by(is_active=True).first()
-    if active_config:
-        active_config.is_active = False
+    if not active_config:
+        active_config = StorageConfig()
     
-    new_config = StorageConfig(
-        storage_type=data.get('storage_type', 'local'),
-        local_base_url=data.get('local_base_url'),
-        local_upload_path=data.get('local_upload_path'),
-        oss_access_key_id=data.get('oss_access_key_id'),
-        oss_access_key_secret=data.get('oss_access_key_secret'),
-        oss_bucket_name=data.get('oss_bucket_name'),
-        oss_bucket_domain=data.get('oss_bucket_domain'),
-        oss_endpoint=data.get('oss_endpoint'),
-        oss_https_enabled=data.get('oss_https_enabled', False),
-        oss_cdn_domain=data.get('oss_cdn_domain'),
-        oss_custom_domain=data.get('oss_custom_domain'),
-        oss_region=data.get('oss_region'),
-        max_file_size=data.get('max_file_size', 5242880),
-        allowed_extensions=data.get('allowed_extensions', 'jpg,jpeg,png,webp,gif'),
-        is_active=True
-    )
+    active_config.is_active = True
+    active_config.storage_type = storage_type
     
-    db.session.add(new_config)
+    if storage_type == 'oss':
+        active_config.oss_endpoint = oss_config.get('endpoint') or data.get('oss_endpoint', '')
+        active_config.oss_access_key_id = oss_config.get('access_key_id') or data.get('oss_access_key_id', '')
+        active_config.oss_access_key_secret = oss_config.get('access_key_secret') or data.get('oss_access_key_secret', '')
+        active_config.oss_bucket_name = oss_config.get('bucket_name') or data.get('oss_bucket_name', '')
+        active_config.oss_bucket_domain = oss_config.get('bucket_domain') or data.get('oss_bucket_domain', '')
+        active_config.oss_https_enabled = oss_config.get('https_enabled') or data.get('oss_https_enabled', False)
+        active_config.oss_cdn_domain = oss_config.get('cdn_domain') or data.get('oss_cdn_domain', '')
+        active_config.oss_custom_domain = oss_config.get('custom_domain') or data.get('oss_custom_domain', '')
+        active_config.oss_region = oss_config.get('region') or data.get('oss_region', '')
+    else:
+        active_config.local_upload_path = data.get('local_upload_path', 'uploads')
+        active_config.local_base_url = data.get('local_base_url', 'http://localhost:5001/uploads')
+    
     db.session.commit()
     reset_storage_backend()
-    return success(new_config.to_dict(include_secret=True))
+    return success(active_config.to_dict(include_secret=True))
+
+
+@admin_bp.route('/storage/migrate-to-oss', methods=['POST'])
+@admin_required
+def migrate_local_files_to_oss():
+    """将本地 uploads 目录中的文件迁移到 OSS"""
+    from app.services.storage import LocalStorage, get_storage_backend
+    import os
+    
+    config = StorageConfig.query.filter_by(is_active=True).first()
+    if not config:
+        return error(400, '请先配置存储服务'), 400
+    if config.storage_type != 'oss':
+        return error(400, '当前存储方式不是 OSS，请先切换到 OSS 后再执行迁移'), 400
+    
+    local_path = config.local_upload_path
+    if not os.path.isabs(local_path):
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        local_path = os.path.join(os.path.dirname(base_dir), local_path)
+    
+    if not os.path.exists(local_path):
+        return error(400, f'本地上传目录不存在: {local_path}'), 400
+    
+    local_storage = LocalStorage(
+        upload_path=local_path,
+        base_url=config.local_base_url or ''
+    )
+    
+    files = local_storage.list_files()
+    if not files:
+        return success({'message': '没有需要迁移的文件', 'migrated': 0, 'total': 0, 'failed': 0})
+    
+    oss_storage = get_storage_backend()
+    
+    migrated = []
+    failed_list = []
+    
+    for file_info in files:
+        local_file_path = file_info['path']
+        filename = file_info['filename']
+        
+        try:
+            class LocalFile:
+                def __init__(self, path, name):
+                    self.filename = name
+                    self._path = path
+                def seek(self, _offset):
+                    pass
+                def read(self):
+                    with open(self._path, 'rb') as f:
+                        return f.read()
+                @property
+                def content_length(self):
+                    return os.path.getsize(self._path)
+            
+            file_obj = LocalFile(local_file_path, filename)
+            new_url = oss_storage.upload(file_obj, filename)
+            migrated.append({
+                'filename': filename,
+                'old_url': file_info['url'],
+                'new_url': new_url
+            })
+        except Exception as e:
+            failed_list.append({
+                'filename': filename,
+                'error': str(e)
+            })
+    
+    return success({
+        'migrated': len(migrated),
+        'total': len(files),
+        'failed': len(failed_list),
+        'migrated_files': migrated,
+        'failed_files': failed_list
+    })
 
 @admin_bp.route('/profile/password', methods=['PUT'])
 @admin_required

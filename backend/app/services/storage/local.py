@@ -26,3 +26,18 @@ class LocalStorage(StorageBackend):
     
     def get_url(self, filename):
         return f"{self.base_url}/{filename}"
+    
+    def list_files(self):
+        """列出上传目录中的所有文件"""
+        files = []
+        if os.path.exists(self.upload_path):
+            for f in os.listdir(self.upload_path):
+                full_path = os.path.join(self.upload_path, f)
+                if os.path.isfile(full_path):
+                    files.append({
+                        'filename': f,
+                        'path': full_path,
+                        'url': self.get_url(f),
+                        'size': os.path.getsize(full_path)
+                    })
+        return files
