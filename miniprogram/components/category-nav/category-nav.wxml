@@ -13,7 +13,8 @@
       class="category-item filter-btn {{showStyleFilter ? 'active' : ''}}"
       bindtap="onStyleTap"
     >
-      <text>🏷风格</text>
+      <image class="filter-icon" src="/images/fengge.svg" mode="aspectFit" />
+      <text>风格</text>
     </view>
   </view>
   
