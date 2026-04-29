@@ -34,12 +34,6 @@
     </view>
   </view>
   
-  <view class="product-tags" wx:if="{{product.tags && product.tags.length > 0}}">
-    <view class="tag" wx:for="{{product.tags}}" wx:key="id">
-      <text>{{item.name}}</text>
-    </view>
-  </view>
-  
   <view class="detail-section">
     <text class="section-title">图纸详情</text>
     <rich-text nodes="{{product.description}}" class="detail-rich-text" wx:if="{{product.description}}" />
