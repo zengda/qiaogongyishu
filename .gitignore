@@ -1,0 +1,15 @@
+.venv/
+.vscode/
+__pycache__/
+*.pyc
+*.pyo
+*.db-journal
+.DS_Store
+*.log
+node_modules/
+dist/
+.env
+private.key
+*.jpg
+*.jpeg
+*.png

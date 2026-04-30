@@ -295,6 +295,15 @@ def admin_create_banner():
     CacheService.clear_cache('banners')
     return success(banner.to_dict())
 
+@admin_bp.route('/banners/<int:banner_id>', methods=['GET'])
+@admin_required
+def admin_get_banner(banner_id):
+    """获取单个Banner详情"""
+    banner = Banner.query.get(banner_id)
+    if not banner:
+        return error(404, 'Banner不存在'), 404
+    return success(banner.to_dict())
+
 @admin_bp.route('/banners/<int:banner_id>', methods=['PUT'])
 @admin_required
 def admin_update_banner(banner_id):
