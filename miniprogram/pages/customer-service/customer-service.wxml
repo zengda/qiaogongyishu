@@ -1,6 +1,6 @@
 <view class="container">
   <view class="qrcode-wrap">
-    <image class="qrcode-image" src="{{qrcodeUrl}}" mode="aspectFit" />
+    <image class="qrcode-image" src="{{qrcodeUrl}}" mode="aspectFit" show-menu-by-longpress="{{true}}" />
     <view class="qrcode-tips">
       <text class="tip-text">微信扫一扫，添加客服</text>
       <text class="tip-text">为您一对一解答建房疑问</text>
