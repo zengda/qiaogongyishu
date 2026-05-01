@@ -1,0 +1,40 @@
+services:
+  flask:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: qiaogongyishu-flask
+    restart: always
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./backend/instance:/app/instance:z
+      - ./uploads:/app/uploads:z
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - qiaogongyishu
+
+  redis:
+    image: redis:7-alpine
+    container_name: qiaogongyishu-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis-data:/data:z
+    command: redis-server --appendonly yes --save 60 1
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - qiaogongyishu
+
+networks:
+  qiaogongyishu:
+    driver: bridge
