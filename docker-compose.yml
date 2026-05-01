@@ -10,6 +10,8 @@ services:
     volumes:
       - ./backend/instance:/app/instance:z
       - ./uploads:/app/uploads:z
+    env_file:
+      - ./backend/.env
     environment:
       - TZ=Asia/Shanghai
     depends_on:
@@ -22,8 +24,6 @@ services:
     image: redis:7-alpine
     container_name: qiaogongyishu-redis
     restart: always
-    ports:
-      - "6379:6379"
     volumes:
       - ./redis-data:/data:z
     command: redis-server --appendonly yes --save 60 1

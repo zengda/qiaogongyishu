@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.env
+.venv/
+.vscode/
+uploads/*
+!uploads/.gitkeep
+instance/*
+!instance/.gitkeep
+*.db
+*.db-journal
+.DS_Store
+*.log
+.git
+.gitignore
+*.md
