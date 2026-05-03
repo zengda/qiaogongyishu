@@ -1,7 +1,6 @@
 {
   "usingComponents": {
     "banner-component": "/components/banner/banner",
-    "category-nav": "/components/category-nav/category-nav",
-    "style-filter": "/components/style-filter/style-filter"
+    "category-nav": "/components/category-nav/category-nav"
   }
 }
