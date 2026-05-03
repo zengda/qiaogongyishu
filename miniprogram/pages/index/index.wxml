@@ -41,7 +41,7 @@
   
   <view class="product-list">
     <view 
-      class="product-card {{index % 2 === 0 ? 'left' : 'right'}}" 
+      class="product-card" 
       wx:for="{{products}}" 
       wx:key="id" 
       bindtap="onProductClick" 

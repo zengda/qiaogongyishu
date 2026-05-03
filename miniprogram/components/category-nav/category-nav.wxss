@@ -20,6 +20,7 @@
   transition: all 0.3s ease;
   white-space: nowrap;
   border-bottom: 4rpx solid transparent;
+  font-weight: 500;
 }
 
 .category-item.active {

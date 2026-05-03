@@ -27,27 +27,20 @@
 }
 
 .product-list {
+  display: flex;
+  flex-wrap: wrap;
   padding: 24rpx;
   background: #f7f8fa;
+  justify-content: space-between;
 }
 
 .product-card {
-  width: calc(50% - 10rpx);
+  width: 48%;
   background: #fff;
   border-radius: 16rpx;
   overflow: hidden;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-  margin-bottom: 20rpx;
-}
-
-.product-card.left {
-  float: left;
-  margin-right: 20rpx;
-}
-
-.product-card.right {
-  float: right;
-  margin-right: 0;
+  margin-bottom: 24rpx;
 }
 
 .product-image-wrapper {
