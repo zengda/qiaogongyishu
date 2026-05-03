@@ -21,7 +21,7 @@ class OSSStorage(StorageBackend):
             bucket_url = f"{protocol}://{bucket_domain}"
         else:
             bucket_url = f"{protocol}://{endpoint}"
-        self.bucket = Bucket(self.auth, bucket_url, bucket_name) if not (bucket_domain or '').startswith(bucket_name + '.') else Bucket(self.auth, bucket_url)
+        self.bucket = Bucket(self.auth, bucket_url, bucket_name, is_cname=bool(bucket_domain))
     
     def upload(self, file, filename):
         ext = filename.rsplit('.', 1)[-1].lower()

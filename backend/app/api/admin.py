@@ -680,7 +680,7 @@ def test_oss_connection():
             bucket_url = f"{protocol}://{endpoint}"
         
         if bucket_domain and bucket_domain.startswith(bucket_name + '.'):
-            bucket = oss2.Bucket(auth, bucket_url)
+            bucket = oss2.Bucket(auth, bucket_url, bucket_name, is_cname=True)
         else:
             bucket = oss2.Bucket(auth, bucket_url, bucket_name)
         
