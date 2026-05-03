@@ -4,11 +4,12 @@ const PROD_API_BASE_URL = 'https://qgys.rongyun.online/api/v1'
 function getApiBaseUrl() {
   try {
     const accountInfo = wx.getAccountInfoSync()
-    if (accountInfo.miniProgram.envVersion === 'release') {
+    const env = accountInfo.miniProgram.envVersion
+    if (env === 'release' || env === 'trial') {
       return PROD_API_BASE_URL
     }
   } catch (e) {}
-  return DEV_API_BASE_URL
+  return PROD_API_BASE_URL
 }
 
 module.exports = {

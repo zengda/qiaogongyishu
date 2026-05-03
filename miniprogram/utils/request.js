@@ -1,5 +1,5 @@
-const app = getApp()
-const baseUrl = app.globalData.apiBaseUrl
+const config = require('./config')
+const baseUrl = config.apiBaseUrl
 
 const request = (options) => {
   return new Promise((resolve, reject) => {
