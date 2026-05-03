@@ -27,8 +27,6 @@
 }
 
 .product-list {
-  display: flex;
-  flex-wrap: wrap;
   padding: 24rpx;
   background: #f7f8fa;
 }
@@ -39,11 +37,16 @@
   border-radius: 16rpx;
   overflow: hidden;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-  margin-right: 20rpx;
   margin-bottom: 20rpx;
 }
 
-.product-card:nth-child(2n) {
+.product-card.left {
+  float: left;
+  margin-right: 20rpx;
+}
+
+.product-card.right {
+  float: right;
   margin-right: 0;
 }
 
@@ -146,17 +149,22 @@
 }
 
 .skeleton-product-list {
-  display: flex;
-  flex-wrap: wrap;
   padding: 24rpx;
-  gap: 20rpx;
+  overflow: hidden;
 }
 
 .skeleton-card {
+  float: left;
   width: calc(50% - 10rpx);
   background: #fff;
   border-radius: 16rpx;
   overflow: hidden;
+  margin-right: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.skeleton-card:nth-child(2n) {
+  margin-right: 0;
 }
 
 .skeleton-img {
