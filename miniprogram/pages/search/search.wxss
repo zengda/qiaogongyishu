@@ -80,7 +80,7 @@
   display: flex;
   flex-wrap: wrap;
   padding: 20rpx 24rpx;
-  gap: 20rpx;
+  justify-content: space-between;
 }
 
 .product-card {
