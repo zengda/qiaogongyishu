@@ -679,7 +679,10 @@ def test_oss_connection():
         else:
             bucket_url = f"{protocol}://{endpoint}"
         
-        bucket = oss2.Bucket(auth, bucket_url, bucket_name)
+        if bucket_domain and bucket_domain.startswith(bucket_name + '.'):
+            bucket = oss2.Bucket(auth, bucket_url)
+        else:
+            bucket = oss2.Bucket(auth, bucket_url, bucket_name)
         
         # 获取Bucket信息以验证连接
         bucket_info = bucket.get_bucket_info()
