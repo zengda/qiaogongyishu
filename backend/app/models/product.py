@@ -1,6 +1,6 @@
 from app.extensions import db
 from datetime import datetime
-from flask import current_app
+from app.utils.image_url import fix_image_url
 
 class Product(db.Model):
     __tablename__ = 'products'
@@ -50,12 +50,7 @@ class Product(db.Model):
         else:
             banner_images = [img for img in self.images if img.image_type == 'banner']
             if banner_images:
-                image_url = banner_images[0].image_url
-                if image_url and not image_url.startswith('http'):
-                    if image_url.startswith('/uploads/'):
-                        image_url = current_app.config['LOCAL_BASE_URL'].replace('/uploads', '') + image_url
-                    else:
-                        image_url = current_app.config['LOCAL_BASE_URL'] + '/' + image_url
+                image_url = fix_image_url(banner_images[0].image_url)
                 result['cover_image'] = image_url
             else:
                 result['cover_image'] = None

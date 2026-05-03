@@ -1,6 +1,6 @@
 from app.extensions import db
 from datetime import datetime
-from flask import current_app
+from app.utils.image_url import fix_image_url
 
 class ProductImage(db.Model):
     __tablename__ = 'product_images'
@@ -15,12 +15,7 @@ class ProductImage(db.Model):
     product = db.relationship('Product', back_populates='images')
     
     def to_dict(self):
-        image_url = self.image_url
-        if image_url and not image_url.startswith('http'):
-            if image_url.startswith('/uploads/'):
-                image_url = current_app.config['LOCAL_BASE_URL'].replace('/uploads', '') + image_url
-            else:
-                image_url = current_app.config['LOCAL_BASE_URL'] + '/' + image_url
+        image_url = fix_image_url(self.image_url)
         
         return {
             'id': self.id,
