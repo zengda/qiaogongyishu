@@ -30,7 +30,6 @@
   display: flex;
   flex-wrap: wrap;
   padding: 24rpx;
-  gap: 20rpx;
   background: #f7f8fa;
 }
 
@@ -40,6 +39,12 @@
   border-radius: 16rpx;
   overflow: hidden;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  margin-right: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.product-card:nth-child(2n) {
+  margin-right: 0;
 }
 
 .product-image-wrapper {
