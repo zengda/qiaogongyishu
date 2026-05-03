@@ -74,8 +74,9 @@ class CacheService:
             return
         
         if prefix:
-            keys = redis_client.keys(f'{prefix}:*')
+            keys = list(redis_client.keys(f'{prefix}:*'))
+            keys.append(prefix)
         else:
-            keys = redis_client.keys('*')
+            keys = list(redis_client.keys('*'))
         if keys:
             redis_client.delete(*keys)
