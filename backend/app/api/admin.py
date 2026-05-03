@@ -689,9 +689,8 @@ def test_oss_connection():
         
         result = {
             'message': 'OSS 连接测试成功',
-            'bucket_name': bucket_name,
-            'bucket_region': bucket_info.bucket.location if hasattr(bucket_info, 'location') else 'unknown',
-            'storage_size': bucket_info.bucket.storage_size if hasattr(bucket_info, 'bucket') else 'unknown'
+            'bucket_name': bucket_info.name,
+            'location': bucket_info.location or 'unknown'
         }
         
         return success(result)
