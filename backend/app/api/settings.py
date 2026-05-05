@@ -19,22 +19,29 @@ def get_storage_config():
     """获取存储配置"""
     config = StorageConfig.query.filter_by(is_active=True).first()
     if not config:
-        # 如果没有配置，返回默认值
         return success({
             'storage_type': 'local',
-            'storage_config': {}
+            'oss_endpoint': '',
+            'oss_access_key_id': '',
+            'oss_access_key_secret': '',
+            'oss_bucket_name': '',
+            'oss_bucket_domain': '',
+            'oss_https_enabled': False,
+            'oss_custom_domain': '',
+            'local_upload_path': 'uploads',
+            'local_base_url': 'http://localhost:5001/uploads'
         })
     return success({
         'storage_type': config.storage_type,
-        'storage_config': {
-            'oss_endpoint': config.oss_endpoint,
-            'oss_access_key_id': config.oss_access_key_id,
-            'oss_access_key_secret': config.oss_access_key_secret,
-            'oss_bucket_name': config.oss_bucket_name,
-            'oss_bucket_domain': config.oss_bucket_domain,
-            'oss_https_enabled': config.oss_https_enabled,
-            'oss_custom_domain': config.oss_custom_domain
-        }
+        'oss_endpoint': config.oss_endpoint or '',
+        'oss_access_key_id': config.oss_access_key_id or '',
+        'oss_access_key_secret': config.oss_access_key_secret or '',
+        'oss_bucket_name': config.oss_bucket_name or '',
+        'oss_bucket_domain': config.oss_bucket_domain or '',
+        'oss_https_enabled': config.oss_https_enabled or False,
+        'oss_custom_domain': config.oss_custom_domain or '',
+        'local_upload_path': config.local_upload_path or 'uploads',
+        'local_base_url': config.local_base_url or 'http://localhost:5001/uploads'
     })
 
 @settings_bp.route('/storage/config', methods=['PUT'])
@@ -46,6 +53,8 @@ def update_storage_config():
     
     storage_type = data.get('storage_type', 'local')
     oss_config = data.get('oss_config', {})
+    local_upload_path = data.get('local_upload_path', 'uploads')
+    local_base_url = data.get('local_base_url', 'http://localhost:5001/uploads')
     
     # 获取或创建配置
     config = StorageConfig.query.filter_by(is_active=True).first()
@@ -55,6 +64,8 @@ def update_storage_config():
     # 更新配置
     config.storage_type = storage_type
     config.is_active = True
+    config.local_upload_path = local_upload_path
+    config.local_base_url = local_base_url
     
     if storage_type == 'oss':
         config.oss_endpoint = oss_config.get('endpoint', '')

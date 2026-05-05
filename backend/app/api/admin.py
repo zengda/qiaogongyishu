@@ -510,7 +510,18 @@ def admin_get_storage_config():
     """获取存储配置"""
     config = StorageConfig.query.filter_by(is_active=True).first()
     if not config:
-        return error(404, '存储配置不存在'), 404
+        return success({
+            'storage_type': 'local',
+            'oss_endpoint': '',
+            'oss_access_key_id': '',
+            'oss_access_key_secret': '',
+            'oss_bucket_name': '',
+            'oss_bucket_domain': '',
+            'oss_https_enabled': False,
+            'oss_custom_domain': '',
+            'local_upload_path': 'uploads',
+            'local_base_url': 'http://localhost:5001/uploads'
+        })
     return success(config.to_dict(include_secret=True))
 
 @admin_bp.route('/storage/config', methods=['PUT'])
@@ -525,9 +536,12 @@ def admin_update_storage_config():
     active_config = StorageConfig.query.filter_by(is_active=True).first()
     if not active_config:
         active_config = StorageConfig()
+        db.session.add(active_config)
     
     active_config.is_active = True
     active_config.storage_type = storage_type
+    active_config.local_upload_path = data.get('local_upload_path', 'uploads')
+    active_config.local_base_url = data.get('local_base_url', 'http://localhost:5001/uploads')
     
     if storage_type == 'oss':
         active_config.oss_endpoint = oss_config.get('endpoint') or data.get('oss_endpoint', '')
@@ -539,9 +553,6 @@ def admin_update_storage_config():
         active_config.oss_cdn_domain = oss_config.get('cdn_domain') or data.get('oss_cdn_domain', '')
         active_config.oss_custom_domain = oss_config.get('custom_domain') or data.get('oss_custom_domain', '')
         active_config.oss_region = oss_config.get('region') or data.get('oss_region', '')
-    else:
-        active_config.local_upload_path = data.get('local_upload_path', 'uploads')
-        active_config.local_base_url = data.get('local_base_url', 'http://localhost:5001/uploads')
     
     db.session.commit()
     reset_storage_backend()
