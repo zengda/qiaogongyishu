@@ -378,7 +378,7 @@ def admin_create_customer():
     if not data.get('name') or not data.get('phone'):
         return error(400, '姓名和手机号为必填项'), 400
     
-    customer, err = CustomerService.create_customer(data)
+    customer, err = CustomerService.create_customer(data, source='后台添加')
     if err:
         return error(400, err), 400
     

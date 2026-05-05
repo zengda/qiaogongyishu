@@ -14,7 +14,7 @@ def create_customer():
     if not data.get('name') or not data.get('phone'):
         return error(400, '姓名和手机号为必填项'), 400
     
-    customer, err = CustomerService.create_customer(data)
+    customer, err = CustomerService.create_customer(data, source='小程序')
     if err:
         return error(400, err), 400
     
@@ -35,7 +35,7 @@ def get_customer_list():
         per_page=per_page
     )
     
-    return paginated(items, total, page, per_page)
+    return success(paginated(items, page, per_page, total))
 
 @customer_bp.route('/customers/<int:customer_id>', methods=['GET'])
 def get_customer_detail(customer_id):

@@ -10,6 +10,7 @@ Page({
       city: '',
       buildingAreaBudget: ''
     },
+    region: [],
     productId: '',
     productTitle: '',
     submitting: false,
@@ -39,18 +40,20 @@ Page({
     this.setData({ 'form.buildingAreaBudget': e.detail.value })
   },
 
-  onRegionPick() {
-    wx.chooseRegion({
-      success: (res) => {
-        this.setData({
-          'form.province': res.province,
-          'form.city': res.city
-        })
-      }
+  onRegionChange(e) {
+    const region = e.detail.value
+    this.setData({
+      region: region,
+      'form.province': region[0] || '',
+      'form.city': region[1] || ''
     })
   },
 
   async onSubmit() {
+    if (this.data.submitting) {
+      return
+    }
+
     const { form, productId, productTitle } = this.data
     
     if (!form.name.trim()) {
@@ -91,8 +94,6 @@ Page({
   },
 
   goHome() {
-    wx.navigateBack({
-      delta: 99
-    })
+    wx.reLaunch({ url: '/pages/index/index' })
   }
 })

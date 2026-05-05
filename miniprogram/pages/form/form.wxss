@@ -69,7 +69,10 @@
 
 .form-picker {
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
 }
 
 .picker-text {
@@ -77,11 +80,22 @@
   color: #999;
 }
 
+.picker-text.selected {
+  color: #333;
+}
+
+.picker-arrow {
+  font-size: 36rpx;
+  color: #ccc;
+  margin-left: 16rpx;
+}
+
 .submit-btn {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  z-index: 10;
   height: 100rpx;
   background: #1A6D5C;
   color: #fff;
@@ -103,6 +117,7 @@
   left: 0;
   right: 0;
   bottom: 0;
+  z-index: 100;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;

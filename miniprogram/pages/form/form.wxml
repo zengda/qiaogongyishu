@@ -42,9 +42,12 @@
   
   <view class="form-item">
     <text class="form-label">所在省市</text>
-    <view class="form-picker" bindtap="onRegionPick">
-      <text class="picker-text">{{form.province && form.city ? form.province + ' ' + form.city : '请选择您所在的省市'}}</text>
-    </view>
+    <picker mode="region" value="{{region}}" bindchange="onRegionChange">
+      <view class="form-picker">
+        <text class="picker-text {{form.province ? 'selected' : ''}}">{{form.province && form.city ? form.province + ' ' + form.city : '请选择您所在的省市'}}</text>
+        <text class="picker-arrow">›</text>
+      </view>
+    </picker>
   </view>
   
   <view class="form-item">
@@ -57,7 +60,7 @@
     />
   </view>
   
-  <view class="submit-btn" bindtap="onSubmit" disabled="{{disabled}}">
+  <view class="submit-btn {{submitting ? 'disabled' : ''}}" bindtap="onSubmit">
     <text>{{submitting ? '提交中...' : '点击获取房屋图纸'}}</text>
   </view>
 </view>

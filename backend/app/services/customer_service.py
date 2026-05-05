@@ -1,4 +1,4 @@
-from app.extensions import db, redis_client
+from app.extensions import db, get_redis_client
 from app.models.customer import Customer
 from app.utils.pagination import paginate
 from datetime import datetime, timedelta
@@ -8,12 +8,11 @@ class CustomerService:
     """客户服务"""
     
     @staticmethod
-    def create_customer(data):
+    def create_customer(data, source='小程序'):
         phone = data.get('phone', '')
         if not CustomerService._validate_phone(phone):
             return None, '手机号码格式不正确'
         
-        source = data.get('source', '小程序')
         if source != '后台添加' and CustomerService._check_rate_limit(phone):
             return None, '提交过于频繁，请稍后再试'
         
@@ -44,6 +43,9 @@ class CustomerService:
     @staticmethod
     def _check_rate_limit(phone):
         """检查提交频率限制"""
+        redis_client = get_redis_client()
+        if redis_client is None:
+            return False
         key = f'customer_rate_limit:{phone}'
         count = redis_client.get(key)
         return count is not None and int(count) > 0
@@ -51,6 +53,9 @@ class CustomerService:
     @staticmethod
     def _set_rate_limit(phone):
         """设置提交频率限制（1分钟）"""
+        redis_client = get_redis_client()
+        if redis_client is None:
+            return
         key = f'customer_rate_limit:{phone}'
         redis_client.setex(key, 60, 1)
     
