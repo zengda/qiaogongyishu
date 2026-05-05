@@ -52,7 +52,7 @@ def update_storage_config():
         return error(400, '请求数据为空'), 400
     
     storage_type = data.get('storage_type', 'local')
-    oss_config = data.get('oss_config', {})
+    oss_config = data.get('oss_config') or {}
     local_upload_path = data.get('local_upload_path', 'uploads')
     local_base_url = data.get('local_base_url', 'http://localhost:5001/uploads')
     

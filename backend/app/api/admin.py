@@ -530,7 +530,7 @@ def admin_update_storage_config():
     """更新存储配置"""
     data = request.get_json(silent=True) or {}
     
-    oss_config = data.get('oss_config', {})
+    oss_config = data.get('oss_config') or {}
     storage_type = data.get('storage_type', oss_config.get('storage_type', 'local'))
     
     active_config = StorageConfig.query.filter_by(is_active=True).first()
