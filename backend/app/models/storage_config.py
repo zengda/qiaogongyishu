@@ -17,7 +17,7 @@ class StorageConfig(db.Model):
     oss_cdn_domain = db.Column(db.String(500))
     oss_custom_domain = db.Column(db.String(500))
     oss_region = db.Column(db.String(100))
-    max_file_size = db.Column(db.Integer, default=5242880)
+    max_file_size = db.Column(db.Integer, default=2097152)
     allowed_extensions = db.Column(db.String(500), default='jpg,jpeg,png,webp,gif')
     is_active = db.Column(db.Boolean, default=True)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)

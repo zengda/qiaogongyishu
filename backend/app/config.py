@@ -29,7 +29,7 @@ class Config:
     OSS_ENDPOINT = os.getenv('OSS_ENDPOINT', '')
     OSS_REGION = os.getenv('OSS_REGION', '')
     
-    MAX_FILE_SIZE = 5 * 1024 * 1024
+    MAX_FILE_SIZE = 2 * 1024 * 1024
     ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png', 'gif', 'webp'}
     
     RATE_LIMIT_WINDOW = 60
