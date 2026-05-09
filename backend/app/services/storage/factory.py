@@ -30,7 +30,7 @@ def get_storage_backend():
 
     config = StorageConfig.query.filter_by(is_active=True).first()
 
-    storage_type = config.storage_type if config else EnvConfig.STORAGE_TYPE
+    storage_type = _db_or_env(config.storage_type if config else '', EnvConfig.STORAGE_TYPE)
 
     if storage_type == 'oss':
         _storage_backend = OSSStorage(

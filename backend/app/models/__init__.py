@@ -43,12 +43,18 @@ def init_data():
         db.session.add(admin)
     
     if not StorageConfig.query.first():
+        from app.config import Config as EnvConfig
         storage_config = StorageConfig(
-            storage_type='local',
-            local_upload_path='uploads',
-            local_base_url='/uploads',
+            storage_type=EnvConfig.STORAGE_TYPE,
+            local_upload_path=EnvConfig.LOCAL_UPLOAD_PATH,
+            local_base_url=EnvConfig.LOCAL_BASE_URL,
             is_active=True
         )
+        if EnvConfig.STORAGE_TYPE == 'oss':
+            storage_config.oss_access_key_id = EnvConfig.OSS_ACCESS_KEY_ID
+            storage_config.oss_access_key_secret = EnvConfig.OSS_ACCESS_KEY_SECRET
+            storage_config.oss_bucket_name = EnvConfig.OSS_BUCKET_NAME
+            storage_config.oss_endpoint = EnvConfig.OSS_ENDPOINT
         db.session.add(storage_config)
     
     db.session.commit()

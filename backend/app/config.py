@@ -1,8 +1,14 @@
 import os
 from dotenv import load_dotenv
 
-_env_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), '.env')
-load_dotenv(_env_file)
+_base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_env_file = os.path.join(_base_dir, '.env')
+if os.path.exists(_env_file):
+    load_dotenv(_env_file)
+else:
+    _env_prod = os.path.join(_base_dir, '.env.production')
+    if os.path.exists(_env_prod):
+        load_dotenv(_env_prod)
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key')
