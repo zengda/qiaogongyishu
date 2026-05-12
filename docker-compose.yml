@@ -11,7 +11,7 @@ services:
       - ./backend/instance:/app/instance:z
       - ./uploads:/app/uploads:z
     env_file:
-      - ./backend/.env.production
+      - ./backend/.env
     environment:
       - TZ=Asia/Shanghai
     depends_on:

@@ -510,19 +510,17 @@ def admin_get_storage_config():
     """获取存储配置"""
     config = StorageConfig.query.filter_by(is_active=True).first()
     if not config:
-        from app.config import Config as EnvConfig
         return success({
-            'storage_type': EnvConfig.STORAGE_TYPE,
-            'oss_endpoint': EnvConfig.OSS_ENDPOINT,
-            'oss_access_key_id': EnvConfig.OSS_ACCESS_KEY_ID,
-            'oss_access_key_secret': EnvConfig.OSS_ACCESS_KEY_SECRET,
-            'oss_bucket_name': EnvConfig.OSS_BUCKET_NAME,
+            'storage_type': 'local',
+            'oss_endpoint': '',
+            'oss_access_key_id': '',
+            'oss_access_key_secret': '',
+            'oss_bucket_name': '',
             'oss_bucket_domain': '',
             'oss_https_enabled': False,
             'oss_custom_domain': '',
-            'oss_cdn_domain': '',
-            'local_upload_path': EnvConfig.LOCAL_UPLOAD_PATH,
-            'local_base_url': EnvConfig.LOCAL_BASE_URL
+            'local_upload_path': 'uploads',
+            'local_base_url': 'http://localhost:5001/uploads'
         })
     return success(config.to_dict(include_secret=True))
 
@@ -532,10 +530,8 @@ def admin_update_storage_config():
     """更新存储配置"""
     data = request.get_json(silent=True) or {}
     
-    from app.config import Config as EnvConfig
-    
     oss_config = data.get('oss_config') or {}
-    storage_type = data.get('storage_type', oss_config.get('storage_type', EnvConfig.STORAGE_TYPE))
+    storage_type = data.get('storage_type', oss_config.get('storage_type', 'local'))
     
     active_config = StorageConfig.query.filter_by(is_active=True).first()
     if not active_config:
@@ -544,8 +540,8 @@ def admin_update_storage_config():
     
     active_config.is_active = True
     active_config.storage_type = storage_type
-    active_config.local_upload_path = data.get('local_upload_path', EnvConfig.LOCAL_UPLOAD_PATH)
-    active_config.local_base_url = data.get('local_base_url', EnvConfig.LOCAL_BASE_URL)
+    active_config.local_upload_path = data.get('local_upload_path', 'uploads')
+    active_config.local_base_url = data.get('local_base_url', 'http://localhost:5001/uploads')
     
     if storage_type == 'oss':
         active_config.oss_endpoint = oss_config.get('endpoint') or data.get('oss_endpoint', '')
