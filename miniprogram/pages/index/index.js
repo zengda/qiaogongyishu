@@ -99,6 +99,22 @@ Page({
     })
   },
 
+  onShareAppMessage() {
+    return {
+      title: '巧工艺墅 - 专业农村自建房图纸设计',
+      path: '/pages/index/index',
+      imageUrl: this.data.banners[0]?.image_url
+    }
+  },
+
+  onShareTimeline() {
+    return {
+      title: '巧工艺墅 - 专业农村自建房图纸设计',
+      query: '',
+      imageUrl: this.data.banners[0]?.image_url
+    }
+  },
+
   onCategoryChange(e) {
     const categoryId = e.detail
     this.setData({
