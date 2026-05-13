@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/privacy/privacy",
     "pages/detail/detail",
     "pages/customer-service/customer-service",
     "pages/form/form",
