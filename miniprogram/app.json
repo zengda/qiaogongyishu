@@ -2,6 +2,7 @@
   "pages": [
     "pages/index/index",
     "pages/privacy/privacy",
+    "pages/privacy-detail/privacy-detail",
     "pages/detail/detail",
     "pages/customer-service/customer-service",
     "pages/form/form",

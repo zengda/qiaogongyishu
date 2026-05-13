@@ -16,19 +16,28 @@ Page({
   },
 
   onOpenPrivacyContract() {
-    // 调用微信官方 API 打开隐私协议页面
-    wx.openPrivacyContract({
-      success: () => {
-        console.log('隐私协议页面打开成功')
-      },
-      fail: (err) => {
-        console.error('隐私协议页面打开失败:', err)
-        // 如果微信版本不支持，显示提示
-        wx.showToast({
-          title: '请更新微信版本',
-          icon: 'none'
-        })
-      }
+    // 检查是否支持微信官方隐私协议 API
+    if (typeof wx.openPrivacyContract === 'function') {
+      // 调用微信官方 API 打开隐私协议页面
+      wx.openPrivacyContract({
+        success: () => {
+          console.log('隐私协议页面打开成功')
+        },
+        fail: (err) => {
+          console.error('隐私协议页面打开失败:', err)
+          // 如果微信版本不支持，跳转到自定义页面
+          this.navigateToCustomPrivacyPage()
+        }
+      })
+    } else {
+      // API 不可用，跳转到自定义隐私协议页面
+      this.navigateToCustomPrivacyPage()
+    }
+  },
+
+  navigateToCustomPrivacyPage() {
+    wx.navigateTo({
+      url: '/pages/privacy-detail/privacy-detail'
     })
   },
 
