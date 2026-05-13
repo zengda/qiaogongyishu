@@ -1,51 +1,21 @@
-<view class="container">
-  <view class="header">
-    <text class="title">隐私保护指引</text>
-    <text class="subtitle">巧工艺墅小程序</text>
-  </view>
-
-  <scroll-view class="content" scroll-y>
-    <view class="section">
-      <text class="section-title">一、信息收集与使用</text>
-      <text class="section-content">
-为了向您提供更优质的服务，小程序可能会收集您的以下信息：
-• 联系方式（用于咨询服务）
-• 地理位置信息（用于推荐本地化内容）
-• 设备信息（用于优化用户体验）
-      </text>
+<view class="overlay" bindtap="onOverlayTap">
+  <view class="modal" catchtap="onModalTap">
+    <view class="modal-header">
+      <text class="modal-title">用户隐私保护提示</text>
     </view>
-
-    <view class="section">
-      <text class="section-title">二、信息存储与保护</text>
-      <text class="section-content">
-我们采用行业标准的安全措施来保护您的个人信息，防止数据遭到未经授权的访问、修改、披露或销毁。
-      </text>
+    
+    <view class="modal-content">
+      <text class="content-text">在你使用</text>
+      <text class="content-highlight">巧工艺墅</text>
+      <text class="content-text">服务之前，请仔细阅读</text>
+      <text class="content-link" bindtap="onOpenPrivacyContract">《巧工艺墅小程序隐私保护指引》</text>
+      <text class="content-text">。</text>
+      <text class="content-text">如你同意该指引，请点击"同意"开始使用本小程序。</text>
     </view>
-
-    <view class="section">
-      <text class="section-title">三、信息共享与披露</text>
-      <text class="section-content">
-未经您的同意，我们不会将您的个人信息共享给任何第三方，但在法律法规要求的情况下除外。
-      </text>
+    
+    <view class="modal-footer">
+      <button class="btn btn-reject" bindtap="onDisagree">拒绝</button>
+      <button class="btn btn-agree" bindtap="onAgree">同意</button>
     </view>
-
-    <view class="section">
-      <text class="section-title">四、您的权利</text>
-      <text class="section-content">
-您有权查询、更正、删除您的个人信息。如有任何疑问，请联系我们的客服。
-      </text>
-    </view>
-
-    <view class="section">
-      <text class="section-title">五、联系我们</text>
-      <text class="section-content">
-如您对本隐私政策有任何疑问，请通过小程序内的客服功能联系我们。
-      </text>
-    </view>
-  </scroll-view>
-
-  <view class="footer">
-    <button class="agree-btn" bindtap="onAgree">同意并继续</button>
-    <button class="disagree-btn" bindtap="onDisagree">不同意</button>
   </view>
 </view>

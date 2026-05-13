@@ -7,6 +7,31 @@ Page({
     
   },
 
+  onOverlayTap() {
+    // 点击遮罩层不做任何操作，弹窗不关闭
+  },
+
+  onModalTap() {
+    // 点击弹窗内部不做任何操作
+  },
+
+  onOpenPrivacyContract() {
+    // 调用微信官方 API 打开隐私协议页面
+    wx.openPrivacyContract({
+      success: () => {
+        console.log('隐私协议页面打开成功')
+      },
+      fail: (err) => {
+        console.error('隐私协议页面打开失败:', err)
+        // 如果微信版本不支持，显示提示
+        wx.showToast({
+          title: '请更新微信版本',
+          icon: 'none'
+        })
+      }
+    })
+  },
+
   onAgree() {
     try {
       wx.setStorageSync(AGREEMENT_KEY, 'true')
