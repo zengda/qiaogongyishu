@@ -62,5 +62,14 @@ Page({
       path: `/pages/detail/detail?id=${product.id}`,
       imageUrl: product.banner_images[0]?.image_url
     }
+  },
+
+  onShareTimeline() {
+    const { product } = this.data
+    return {
+      title: product.title,
+      query: `id=${product.id}`,
+      imageUrl: product.banner_images[0]?.image_url
+    }
   }
 })
