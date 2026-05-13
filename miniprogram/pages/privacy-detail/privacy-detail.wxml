@@ -1,7 +1,4 @@
 <view class="container">
-  <view class="header">
-    <text class="title">隐私保护指引</text>
-  </view>
   <scroll-view class="content" scroll-y>
     <text class="agreement-text">{{ agreementContent }}</text>
   </scroll-view>
